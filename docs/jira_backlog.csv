@@ -7,7 +7,7 @@
 6,,Epic,EP6 · Administration et pilotage,"Employés, prix, promotions, événements, statistiques.",To Do,Medium,,,epic
 7,,Epic,EP7 · Expérience client (IA et avis),"Bracelet généré par IA, avis, historique.",To Do,Medium,,,epic
 8,,Epic,EP8 · Prédiction d'occupation (ML),"Random Forest, XGBoost, Prophet + dashboard.",To Do,Medium,,,epic
-9,,Epic,EP9 · Qualité et dette technique,Bugs et configuration relevés à la revue du code (12/11/2026).,To Do,Medium,,,epic
+9,,Epic,EP9 · Qualité et dette technique,Bugs et configuration relevés à la revue du code (12/11/2026).,In Progress,Medium,,,epic
 10,1,Story,"US01 · En tant que client, je veux créer un compte et me connecter afin d'accéder à mes réservations.","En tant que client, je veux créer un compte et me connecter afin d'accéder à mes réservations.
 
 État au 12/11/2026 : Espaces par rôle, connexion e-mail ou CIN, mot de passe oublié en 3 étapes.",Done,High,3,"Sprint 1 - Comptes, rôles et chambres",Client release-1
@@ -96,3 +96,54 @@ Fichier : account/models.py",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement,
 53,9,Bug,"BUG-05 · Menus, stock et événements non rattachés à un hôtel (multi-hôtel incohérent)","Menus, stock et événements non rattachés à un hôtel (multi-hôtel incohérent)
 
 Fichier : gestion_repas, gestion_hotel.Event",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
+54,9,Bug,SEC-01 · Inscription publique d'administrateur possible : n'importe qui créait un compte admin (prise de contrôle),"Inscription publique d'administrateur possible : n'importe qui créait un compte admin (prise de contrôle)
+
+Fichier : account/views.py espace(), ALLOW_STAFF_SIGNUP=False",Done,Highest,,Sprint 5 - Espace réceptionniste par hôtel,audit-securite
+55,9,Bug,SEC-02 · Un admin ordinaire pouvait modifier le mot de passe d'un autre admin ; tout admin créé devenait super-utilisateur,"Un admin ordinaire pouvait modifier le mot de passe d'un autre admin ; tout admin créé devenait super-utilisateur
+
+Fichier : account/views.py user_edit/user_delete, account/forms.py",Done,Highest,,Sprint 5 - Espace réceptionniste par hôtel,audit-securite
+56,9,Bug,SEC-03 · XSS : nom de service / libellé de chambre injecté tel quel dans le calcul de prix client,"XSS : nom de service / libellé de chambre injecté tel quel dans le calcul de prix client
+
+Fichier : templates/hotels/client_book.html",Done,High,,Sprint 5 - Espace réceptionniste par hôtel,audit-securite
+57,9,Bug,SEC-04 · La réception pouvait changer l'e-mail d'un client puis détourner « mot de passe oublié »,"La réception pouvait changer l'e-mail d'un client puis détourner « mot de passe oublié »
+
+Fichier : gestion_rooms/reception_forms.py ClientProfileForm",Done,High,,Sprint 5 - Espace réceptionniste par hôtel,audit-securite
+58,9,Bug,BUG-06 · Check-in possible avant la date d'arrivée ; check-out sans alerte de facture impayée,"Check-in possible avant la date d'arrivée ; check-out sans alerte de facture impayée
+
+Fichier : gestion_rooms/views.py",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+59,9,Bug,BUG-07 · Chambre occupée pouvant être marquée « Disponible » ou « Maintenance »,"Chambre occupée pouvant être marquée « Disponible » ou « Maintenance »
+
+Fichier : gestion_rooms/views.py room_mark",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+60,9,Bug,"BUG-08 · Factures payées modifiables / supprimables, montants négatifs acceptés, 2 factures pour une réservation","Factures payées modifiables / supprimables, montants négatifs acceptés, 2 factures pour une réservation
+
+Fichier : gestion_rooms/views.py, forms.py",Done,High,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+61,9,Bug,BUG-09 · Réceptionniste pouvant supprimer définitivement des réservations (historique perdu),"Réceptionniste pouvant supprimer définitivement des réservations (historique perdu)
+
+Fichier : gestion_rooms/views.py reservation_delete",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+62,9,Bug,BUG-10 · Capacité des chambres ignorée (50 personnes dans une chambre de 2),"Capacité des chambres ignorée (50 personnes dans une chambre de 2)
+
+Fichier : gestion_hotel/booking.py",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+63,9,Bug,BUG-11 · Calendrier : couleurs des réservations invisibles (écrasées par Bootstrap),"Calendrier : couleurs des réservations invisibles (écrasées par Bootstrap)
+
+Fichier : static/site.css",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+64,9,Bug,"BUG-12 · Boutons inutilisables affichés (check-in futur, modifier une réservation terminée, supprimer une facture payée)","Boutons inutilisables affichés (check-in futur, modifier une réservation terminée, supprimer une facture payée)
+
+Fichier : account/crud.py, gestion_rooms/views.py",Done,Low,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+65,9,Bug,BUG-13 · « Aujourd'hui » comptait les chambres en attente au lieu des demandes,"« Aujourd'hui » comptait les chambres en attente au lieu des demandes
+
+Fichier : gestion_rooms/reception_views.py",Done,Low,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+66,9,Bug,"BUG-14 · Assistant hôtel : un service déjà ajouté était dupliqué, l'étape 3 échouait","Assistant hôtel : un service déjà ajouté était dupliqué, l'étape 3 échouait
+
+Fichier : templates/hotels/step3.html",Done,Low,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+67,9,Task,QA-01 · Test robot : chaque page et chaque bouton pour les 5 rôles + visiteur ; tests de sécurité rejouant chaque faille,"Test robot : chaque page et chaque bouton pour les 5 rôles + visiteur ; tests de sécurité rejouant chaque faille
+
+Fichier : account/test_crawl.py, account/test_security.py",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+68,9,Bug,"BUG-15 · Données partagées entre administrateurs : événements, menus, stock et liste des utilisateurs visibles par tous les admins","Données partagées entre administrateurs : événements, menus, stock et liste des utilisateurs visibles par tous les admins
+
+Fichier : gestion_hotel.Event, gestion_repas, account/views.py user_list",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
+69,9,Bug,SEC-05 · Aucune limite de tentatives de connexion (force brute),"Aucune limite de tentatives de connexion (force brute)
+
+Fichier : account/views.py espace()",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",audit-securite
+70,9,Task,"SEC-06 · Mise en production : DEBUG=True, SECRET_KEY et mot de passe BD dans le code","Mise en production : DEBUG=True, SECRET_KEY et mot de passe BD dans le code
+
+Fichier : hotel/settings.py",To Do,High,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",audit-securite
