@@ -1,8 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 
-from account.models import ROLE_CLEANER, ROLE_CLIENT, ROLE_RECEPTIONIST
+from account.models import ROLE_CLEANER, ROLE_RECEPTIONIST
 
 from .models import CleaningTask, Invoice, Reservation, Room
 
@@ -40,38 +39,6 @@ class RoomForm(forms.ModelForm):
         self.fields['hotel'].empty_label = '— Aucun (chambre historique) —'
 
 
-class ReservationForm(forms.ModelForm):
-    """Le client réserve pour lui-même ; le réceptionniste choisit aussi le client."""
-
-    class Meta:
-        model = Reservation
-        fields = ['client', 'room', 'check_in', 'check_out']
-        widgets = {'check_in': DateInput(), 'check_out': DateInput()}
-
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-        rooms = Room.objects.exclude(status=Room.MAINTENANCE)
-        if user is not None and user.role == ROLE_RECEPTIONIST:
-            rooms = rooms.filter(hotel_id=user.hotel_id)
-        self.fields['room'].queryset = rooms
-        if user is not None and user.role == ROLE_CLIENT:
-            del self.fields['client']
-        else:
-            self.fields['client'].queryset = User.objects.filter(role=ROLE_CLIENT)
-
-    def clean_check_in(self):
-        d = self.cleaned_data['check_in']
-        if not self.instance.pk and d < timezone.localdate():
-            raise forms.ValidationError('La date d\'arrivée ne peut pas être dans le passé.')
-        return d
-
-    def _post_clean(self):
-        if self.user is not None and self.user.role == ROLE_CLIENT:
-            self.instance.client = self.user
-        super()._post_clean()
-
-
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
@@ -95,8 +62,10 @@ class CleaningTaskForm(forms.ModelForm):
         fields = ['room', 'assigned_to', 'scheduled_for', 'note']
         widgets = {'scheduled_for': DateTimeInput()}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if user is not None and user.role == ROLE_RECEPTIONIST:   # uniquement les chambres de SON hôtel
+            self.fields['room'].queryset = Room.objects.filter(hotel_id=user.hotel_id)
         self.fields['assigned_to'].queryset = User.objects.filter(role=ROLE_CLEANER, is_active=True)
         self.fields['assigned_to'].required = False
         self.fields['assigned_to'].empty_label = 'Tous les agents'

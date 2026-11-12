@@ -1,5 +1,6 @@
 from django.urls import path
 
+from . import reception_views as rv
 from . import views as v
 
 urlpatterns = [
@@ -17,8 +18,8 @@ urlpatterns = [
     path('reservations/claimed/<int:pk>/confirm/', v.claimed_confirm, name='claimed_confirm'),
     path('reservations/claimed/<int:pk>/refuse/', v.claimed_refuse, name='claimed_refuse'),
     path('reservations/', v.reservation_list, name='reservation_list'),
-    path('reservations/add/', v.reservation_add, name='reservation_add'),
-    path('reservations/<int:pk>/edit/', v.reservation_edit, name='reservation_edit'),
+    path('reservations/add/', rv.reservation_add, name='reservation_add'),
+    path('reservations/<int:pk>/edit/', rv.reservation_edit, name='reservation_edit'),
     path('reservations/<int:pk>/delete/', v.reservation_delete, name='reservation_delete'),
     path('reservations/<int:pk>/confirm/', v.reservation_confirm, name='reservation_confirm'),
     path('reservations/<int:pk>/checkin/', v.reservation_checkin, name='reservation_checkin'),
@@ -29,6 +30,13 @@ urlpatterns = [
     path('invoices/<int:pk>/edit/', v.invoice_edit, name='invoice_edit'),
     path('invoices/<int:pk>/delete/', v.invoice_delete, name='invoice_delete'),
     path('invoices/<int:pk>/pay/', v.invoice_pay, name='invoice_pay'),
+    path('invoices/<int:pk>/print/', rv.invoice_print, name='invoice_print'),
+    # réception : journée, calendrier, clients
+    path('reception/today/', rv.reception_today, name='reception_today'),
+    path('reception/calendar/', rv.reception_calendar, name='reception_calendar'),
+    path('reception/clients/', rv.reception_clients, name='reception_clients'),
+    path('reception/clients/<int:pk>/', rv.reception_client_detail, name='reception_client_detail'),
+    path('reception/clients/<int:pk>/edit/', rv.reception_client_edit, name='reception_client_edit'),
     path('cleaning/', v.cleaning_list, name='cleaning_list'),
     path('cleaning/add/', v.cleaning_add, name='cleaning_add'),
     path('cleaning/<int:pk>/edit/', v.cleaning_edit, name='cleaning_edit'),
@@ -38,7 +46,6 @@ urlpatterns = [
     path('cleaner/done/', v.cleaner_done, name='cleaner_done'),
     path('cleaner/<int:pk>/done/', v.cleaner_mark_done, name='cleaner_mark_done'),
     # client
-    path('book/', v.client_book, name='client_book'),
     path('my-reservations/', v.client_reservations, name='client_reservations'),
     path('my-reservations/<int:pk>/cancel/', v.client_cancel, name='client_cancel'),
     path('my-invoices/', v.client_invoices, name='client_invoices'),

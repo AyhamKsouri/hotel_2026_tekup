@@ -2,12 +2,17 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div><h1 class="h3 font-display mb-0">{{ title }}</h1>{% if subtitle %}<span class="text-secondary">{{ subtitle }}</span>{% endif %}</div>
-  <div class="d-flex gap-2">
-    {% if filters %}<form method="get"><select class="form-select" name="{{ filters.name }}" onchange="this.form.submit()">
-      <option value="">Tous</option>
-      {% for v, l in filters.choices %}<option value="{{ v }}" {% if v == filters.value %}selected{% endif %}>{{ l }}</option>{% endfor %}
-    </select></form>{% endif %}
-    {% if add_url %}<a class="btn btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>{% endif %}
+  <div class="d-flex flex-wrap gap-2">
+    {% if filters or search is not None %}<form method="get" class="d-flex flex-wrap gap-2">
+      {% if search is not None %}<div class="input-group" style="max-width:280px">
+        <input type="search" class="form-control" name="q" id="id_q" value="{{ search }}" placeholder="Nom, CIN, e-mail, téléphone" aria-label="Rechercher">
+        <button class="btn btn-outline-secondary" aria-label="Rechercher"><i class="bi bi-search"></i></button></div>{% endif %}
+      {% if filters %}<select class="form-select w-auto" name="{{ filters.name }}" id="id_filter" onchange="this.form.submit()" aria-label="Filtrer">
+        <option value="">Tous</option>
+        {% for v, l in filters.choices %}<option value="{{ v }}" {% if v == filters.value %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>{% endif %}
+    </form>{% endif %}
+    {% if add_url %}<a class="btn btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg me-1"></i>{{ add_label }}</a>{% endif %}
   </div>
 </div>
 <div class="card card-clean"><div class="table-responsive">
@@ -16,12 +21,13 @@
 {% for r in rows %}<tr>
   {% for c in r.cells %}<td>{{ c }}</td>{% endfor %}
   <td class="text-end"><div class="d-flex gap-1 justify-content-end flex-wrap">
+    {% for label, url in r.links %}<a class="btn btn-sm btn-outline-primary" href="{{ url }}">{{ label }}</a>{% endfor %}
     {% for label, url in r.actions %}<form method="post" action="{{ url }}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary">{{ label }}</button></form>{% endfor %}
-    {% if r.edit_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ r.edit_url }}"><i class="bi bi-pencil"></i></a>{% endif %}
-    {% if r.delete_url %}<a class="btn btn-sm btn-outline-danger" href="{{ r.delete_url }}"><i class="bi bi-trash"></i></a>{% endif %}
+    {% if r.edit_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ r.edit_url }}" aria-label="Modifier"><i class="bi bi-pencil"></i></a>{% endif %}
+    {% if r.delete_url %}<a class="btn btn-sm btn-outline-danger" href="{{ r.delete_url }}" aria-label="Supprimer"><i class="bi bi-trash"></i></a>{% endif %}
   </div></td>
 </tr>{% endfor %}
 </tbody></table>
-{% else %}<div class="text-center text-secondary p-5"><i class="bi bi-inbox fs-1"></i><p class="mb-0">Aucun élément.</p></div>{% endif %}
+{% else %}<div class="text-center text-secondary p-5"><i class="bi bi-inbox fs-1"></i><p class="mb-0">{% if search %}Aucun résultat pour « {{ search }} ».{% else %}Aucun élément.{% endif %}</p></div>{% endif %}
 </div></div>
 {% endblock %}

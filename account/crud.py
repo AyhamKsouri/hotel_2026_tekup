@@ -18,9 +18,12 @@ def bootstrapify(form):
 
 
 def list_page(request, *, title, queryset, columns, base_name=None, add=True,
-              extra_actions=(), filters=None, edit=True, delete=True, subtitle=''):
+              extra_actions=(), filters=None, edit=True, delete=True, subtitle='',
+              links=(), search=None, add_label='Ajouter', add_url_name=None):
     """columns : [(en-tête, fonction(obj) -> texte)].
-    extra_actions : [(libellé, nom_url, condition(obj))] -> boutons POST."""
+    extra_actions : [(libellé, nom_url, condition(obj))] -> boutons POST.
+    links : [(libellé, nom_url, condition(obj))] -> liens GET (fiche, encaisser, imprimer…).
+    search : texte recherché (None = pas de champ de recherche)."""
     rows = []
     for obj in queryset:
         actions = [(label, reverse(url, args=[obj.pk]))
@@ -28,13 +31,16 @@ def list_page(request, *, title, queryset, columns, base_name=None, add=True,
         rows.append({
             'cells': [fn(obj) for _, fn in columns],
             'actions': actions,
+            'links': [(label, reverse(url, args=[obj.pk]))
+                      for label, url, cond in links if cond is None or cond(obj)],
             'edit_url': reverse(f'{base_name}_edit', args=[obj.pk]) if base_name and edit else None,
             'delete_url': reverse(f'{base_name}_delete', args=[obj.pk]) if base_name and delete else None,
         })
     return render(request, 'crud/list.html', {
         'title': title, 'subtitle': subtitle, 'headers': [h for h, _ in columns], 'rows': rows,
-        'add_url': reverse(f'{base_name}_add') if base_name and add else None,
-        'filters': filters,
+        'add_url': (reverse(add_url_name) if add_url_name else
+                    reverse(f'{base_name}_add') if base_name and add else None),
+        'add_label': add_label, 'filters': filters, 'search': search,
     })
 
 

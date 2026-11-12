@@ -1,0 +1,19 @@
+{% extends 'crud/form.html' %}
+{% block title %}Réservation au comptoir{% endblock %}
+{% block content %}
+{{ block.super }}
+<script>
+(function(){
+  // « Client existant » : recherche par CIN / e-mail ; « Nouveau client » : fiche à remplir
+  var mode=document.getElementById('id_client_mode'); if(!mode) return;
+  var row=function(id){var el=document.getElementById(id);return el?el.closest('.mb-3'):null;};
+  var existing=[row('id_identifier')], fresh=['id_cin','id_nom','id_prenom','id_telephone','id_email'].map(row);
+  var toggle=function(){
+    var isNew=mode.value==='new';
+    existing.forEach(function(r){if(r)r.classList.toggle('d-none',isNew);});
+    fresh.forEach(function(r){if(r)r.classList.toggle('d-none',!isNew);});
+  };
+  mode.addEventListener('change',toggle); toggle();
+})();
+</script>
+{% endblock %}

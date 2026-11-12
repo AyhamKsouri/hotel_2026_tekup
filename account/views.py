@@ -249,6 +249,8 @@ def dashboard(request):
         mine = Reservation.objects.filter(room__hotel_id=user.hotel_id)
         stats = [
             ('Réservations réclamées', len(services.pending_claims(user.hotel_id)) if user.hotel_id else 0),
+            ('Arrivées attendues', mine.filter(status=Reservation.CONFIRMED, check_in__lte=today).count()),
+            ('Départs du jour', mine.filter(status=Reservation.CHECKED_IN, check_out__lte=today).count()),
             ('Séjours en cours', mine.filter(status=Reservation.CHECKED_IN).count()),
             ('Factures impayées', Invoice.objects.filter(
                 reservation__room__hotel_id=user.hotel_id, status=Invoice.UNPAID).count()),

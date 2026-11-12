@@ -1,0 +1,10 @@
+{% extends 'crud/form.html' %}
+{% block title %}Modifier la réservation #{{ res.pk }}{% endblock %}
+{% block content %}
+<div class="card card-clean mb-3" style="max-width:680px"><div class="card-body py-3 small">
+  <b>Réservation #{{ res.pk }}</b> · {{ res.client.full_name }} ({{ res.client.telephone }})
+  · statut <span class="badge text-bg-light border">{{ res.get_status_display }}</span>
+  {% if res.booking_id %}· demande #{{ res.booking_id }}{% endif %}
+</div></div>
+{{ block.super }}
+{% endblock %}

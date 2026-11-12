@@ -29,6 +29,9 @@ def check_in(res):
     Room.objects.filter(pk=res.room_id).update(status=Room.OCCUPIED)
 
 
+_check_in = check_in
+
+
 @transaction.atomic
 def check_out(res):
     """Départ : la chambre passe « à nettoyer » et une tâche de nettoyage est créée."""
@@ -46,6 +49,8 @@ def cancel_reservation(res):
     was_in = res.status == Reservation.CHECKED_IN
     res.status = Reservation.CANCELLED
     res.save(update_fields=['status'])
+    # une facture non payée n'a plus d'objet ; une facture payée est conservée (remboursement hors système)
+    Invoice.objects.filter(reservation=res, status=Invoice.UNPAID).delete()
     if was_in:
         Room.objects.filter(pk=res.room_id).update(status=Room.AVAILABLE)
     notify([res.client], f'Votre réservation #{res.pk} a été annulée.')
@@ -57,7 +62,8 @@ def mark_cleaned(task):
     task.done_at = timezone.now()
     task.save(update_fields=['status', 'done_at'])
     Room.objects.filter(pk=task.room_id, status=Room.TO_CLEAN).update(status=Room.AVAILABLE)
-    notify(User.objects.filter(role=ROLE_RECEPTIONIST, is_active=True),
+    # seuls les réceptionnistes de l'hôtel de cette chambre sont concernés
+    notify(User.objects.filter(role=ROLE_RECEPTIONIST, is_active=True, hotel_id=task.room.hotel_id),
            f'Chambre {task.room.number} nettoyée : elle est de nouveau disponible.')
 
 
@@ -144,3 +150,42 @@ def refuse_claim(res):
     if group:
         notify([group[0].client], f'{_claim_label(group)} a été refusée par la réception.')
     return group
+
+
+# ---------------------------------------------------------------- réception : comptoir et modifications
+@transaction.atomic
+def create_walk_in(*, client, room, check_in, check_out, amount=None, check_in_now=False):
+    """Réservation saisie au comptoir : confirmée tout de suite, facture émise, check-in optionnel.
+    Lève ValidationError si la chambre est déjà prise sur ces dates."""
+    Room.objects.select_for_update().filter(pk=room.pk).first()     # sérialise les réservations de la chambre
+    res = Reservation(client=client, room=room, check_in=check_in, check_out=check_out,
+                      status=Reservation.CONFIRMED, price_override=amount)
+    res.full_clean()
+    res.save()
+    Invoice.objects.create(reservation=res, amount=res.total)
+    if check_in_now:
+        _check_in(res)        # alias : le paramètre « check_in » (une date) masque la fonction
+    notify([client], f'Votre réservation #{res.pk} (chambre {room.number}, '
+                     f'{check_in:%d/%m/%Y} → {check_out:%d/%m/%Y}) a été enregistrée par la réception.')
+    return res
+
+
+@transaction.atomic
+def update_reservation(res, amount):
+    """Enregistre une réservation modifiée par la réception et met la facture impayée au nouveau montant."""
+    res.price_override = amount
+    res.save()
+    Invoice.objects.filter(reservation=res, status=Invoice.UNPAID).update(amount=res.total)
+    if res.status == Reservation.CHECKED_IN:
+        Room.objects.filter(pk=res.room_id).update(status=Room.OCCUPIED)
+    notify([res.client], f'Votre réservation #{res.pk} a été modifiée par la réception : chambre {res.room.number}, '
+                         f'{res.check_in:%d/%m/%Y} → {res.check_out:%d/%m/%Y}, {res.total} TND.')
+    return res
+
+
+@transaction.atomic
+def pay_invoice(invoice, method):
+    invoice.status, invoice.method = Invoice.PAID, method
+    invoice.save()
+    notify([invoice.reservation.client], f'Paiement reçu pour la facture #{invoice.pk} ({invoice.amount} TND).')
+    return invoice

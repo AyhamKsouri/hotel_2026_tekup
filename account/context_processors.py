@@ -4,7 +4,6 @@ NAV = {
     ROLE_CLIENT: [
         ('Tableau de bord', 'dashboard'),
         ('Hôtels', 'client_hotels'),
-        ('Réserver une chambre', 'client_book'),
         ('Mes réservations', 'client_reservations'),
         ('Mes factures', 'client_invoices'),
         ('Événements', 'client_events'),
@@ -19,10 +18,14 @@ NAV = {
     ],
     ROLE_RECEPTIONIST: [
         ('Tableau de bord', 'dashboard'),
+        ('Aujourd\'hui', 'reception_today'),
         ('Réservations réclamées', 'claimed_list'),
         ('Toutes les réservations', 'reservation_list'),
+        ('Réservation au comptoir', 'reservation_add'),
+        ('Calendrier des chambres', 'reception_calendar'),
+        ('Clients', 'reception_clients'),
         ('Factures de paiement', 'invoice_list'),
-        ('Chambres disponibles', 'room_availability'),
+        ('Statut des chambres', 'room_availability'),
         ('Planifier un nettoyage', 'cleaning_list'),
     ],
     ROLE_CLEANER: [

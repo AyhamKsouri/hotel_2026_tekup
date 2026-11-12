@@ -1,0 +1,52 @@
+{% extends 'base.html' %}{% block title %}Calendrier des chambres{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 font-display mb-0">Calendrier des chambres</h1>
+    <span class="text-secondary"><i class="bi bi-building me-1"></i>{{ user.hotel.name }} · {{ days.0|date:"d/m" }} → {{ days|last|date:"d/m/Y" }}</span></div>
+  <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+    <a class="btn btn-outline-secondary" href="?start={{ prev|date:'Y-m-d' }}&category={{ category }}" aria-label="Semaine précédente"><i class="bi bi-chevron-left"></i></a>
+    <input type="date" class="form-control w-auto" name="start" id="id_start" value="{{ start|date:'Y-m-d' }}" aria-label="Début" onchange="this.form.submit()">
+    <a class="btn btn-outline-secondary" href="?start={{ next|date:'Y-m-d' }}&category={{ category }}" aria-label="Semaine suivante"><i class="bi bi-chevron-right"></i></a>
+    <a class="btn btn-light" href="?category={{ category }}">Aujourd'hui</a>
+    <select class="form-select w-auto" name="category" id="id_category" onchange="this.form.submit()" aria-label="Catégorie">
+      <option value="">Toutes catégories</option>
+      {% for v, l in categories %}<option value="{{ v }}" {% if v == category %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </form>
+</div>
+
+<div class="d-flex flex-wrap gap-3 small mb-2 text-secondary">
+  <span><span class="cal-key cal-free"></span>Libre (cliquer pour réserver)</span>
+  <span><span class="cal-key cal-pending"></span>Réclamée</span>
+  <span><span class="cal-key cal-confirmed"></span>Confirmée</span>
+  <span><span class="cal-key cal-checked_in"></span>Séjour en cours</span>
+  <span><span class="cal-key cal-maintenance"></span>Maintenance</span>
+</div>
+
+<div class="card card-clean"><div class="table-responsive">
+{% if grid %}
+<table class="table table-bordered mb-0 cal">
+  <thead class="table-light"><tr><th class="cal-room">Chambre</th>
+    {% for d in days %}<th class="text-center {% if d == today %}cal-today{% endif %}">{{ d|date:"D" }}<br>{{ d|date:"d/m" }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in grid %}<tr>
+    <th class="cal-room"><b>{{ row.room.number }}</b><div class="small text-secondary fw-normal">{{ row.room.get_category_display }} · {{ row.room.price_per_night|floatformat:0 }} TND</div></th>
+    {% for c in row.cells %}
+      {% if c.res %}
+        <td class="cal-{{ c.res.status }}{% if c.day == today %} cal-today{% endif %}" title="#{{ c.res.pk }} · {{ c.res.client.full_name }} · {{ c.res.check_in|date:'d/m' }} → {{ c.res.check_out|date:'d/m' }} · {{ c.res.get_status_display }}">
+          <a href="{% url 'reservation_edit' c.res.pk %}?next={{ request.get_full_path|urlencode }}">{% if c.start %}{{ c.res.client.nom }}{% else %}&nbsp;{% endif %}</a></td>
+      {% elif row.room.status == 'maintenance' %}
+        <td class="cal-maintenance{% if c.day == today %} cal-today{% endif %}" title="Maintenance"></td>
+      {% elif c.day >= today %}
+        <td class="cal-free{% if c.day == today %} cal-today{% endif %}"><a href="{% url 'reservation_add' %}?room={{ row.room.pk }}&check_in={{ c.day|date:'Y-m-d' }}" aria-label="Réserver {{ row.room.number }} le {{ c.day|date:'d/m' }}">&nbsp;</a></td>
+      {% else %}
+        <td class="cal-past"></td>
+      {% endif %}
+    {% endfor %}
+  </tr>{% endfor %}
+  </tbody>
+  <tfoot><tr class="table-light"><th class="cal-room">Libres</th>{% for n in free_per_day %}<td class="text-center fw-semibold">{{ n }}</td>{% endfor %}</tr></tfoot>
+</table>
+{% else %}<div class="text-center text-secondary p-5"><i class="bi bi-calendar-x fs-1"></i><p class="mb-0">Aucune chambre dans cette catégorie.</p></div>{% endif %}
+</div></div>
+{% endblock %}

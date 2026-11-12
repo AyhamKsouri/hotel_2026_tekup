@@ -1,8 +1,12 @@
+from functools import wraps
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from account import crud
@@ -10,10 +14,32 @@ from account.decorators import role_required
 from account.models import ROLE_ADMIN, ROLE_CLEANER, ROLE_CLIENT, ROLE_RECEPTIONIST
 
 from . import services
-from .forms import CleaningTaskForm, InvoiceForm, ReservationForm, RoomForm
+from .forms import CleaningTaskForm, InvoiceForm, RoomForm
+from .reception_forms import PaymentForm
 from .models import CleaningTask, Invoice, Reservation, Room
 
 STAFF_FRONT = (ROLE_RECEPTIONIST, ROLE_ADMIN)
+
+
+def front_desk(view=None, *, roles=STAFF_FRONT):
+    """Vue de réception : rôle autorisé ET, pour un réceptionniste, un hôtel assigné.
+    Un réceptionniste sans hôtel voit une page explicative (403) au lieu de listes vides."""
+    def decorator(fn):
+        @wraps(fn)
+        def inner(request, *args, **kwargs):
+            if request.user.role == ROLE_RECEPTIONIST and not request.user.hotel_id:
+                return render(request, 'reception/no_hotel.html', status=403)
+            return fn(request, *args, **kwargs)
+        return role_required(*roles)(inner)
+    return decorator(view) if view else decorator
+
+
+def safe_next(request, default):
+    """Retour vers la page d'origine (paramètre « next ») si l'URL est locale."""
+    nxt = request.POST.get('next') or request.GET.get('next')
+    if nxt and url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}):
+        return nxt
+    return default
 
 
 def _money(v):
@@ -39,6 +65,10 @@ def _invoices(user):
 
 def _rooms(user):
     return _own_hotel(Room.objects.all(), user, 'hotel')
+
+
+def _cleaning(user):
+    return _own_hotel(CleaningTask.objects.select_related('room', 'assigned_to'), user, 'room__hotel')
 
 
 # ================================================================ ADMIN : chambres
@@ -88,7 +118,7 @@ def room_delete(request, pk):
 
 
 # ================================================================ RÉCEPTIONNISTE : chambres disponibles
-@role_required(*STAFF_FRONT)
+@front_desk
 def room_availability(request):
     qs = _rooms(request.user)
     st = request.GET.get('status', Room.AVAILABLE if 'status' not in request.GET else '')
@@ -109,7 +139,7 @@ def room_availability(request):
         filters={'name': 'status', 'value': st, 'choices': Room.STATUS_CHOICES})
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 @require_POST
 def room_mark(request, pk, status):
     room = get_object_or_404(_rooms(request.user), pk=pk)
@@ -120,7 +150,7 @@ def room_mark(request, pk, status):
 
 
 # ================================================================ RÉCEPTIONNISTE : réservations
-@role_required(*STAFF_FRONT)
+@front_desk
 def reservation_list(request):
     qs = _reservations(request.user)
     st = request.GET.get('status')
@@ -128,6 +158,7 @@ def reservation_list(request):
         qs = qs.filter(status=st)
     return crud.list_page(
         request, title='Gestion des réservations', queryset=qs, base_name='reservation',
+        add_label='Nouvelle réservation (comptoir)',
         columns=[('#', lambda r: r.pk), ('Client', lambda r: r.client.full_name),
                  ('Chambre', lambda r: r.room.number),
                  ('Arrivée', lambda r: r.check_in.strftime('%d/%m/%Y')),
@@ -143,20 +174,7 @@ def reservation_list(request):
         filters={'name': 'status', 'value': st, 'choices': Reservation.STATUS_CHOICES})
 
 
-@role_required(*STAFF_FRONT)
-def reservation_add(request):
-    return crud.form_page(request, form_class=ReservationForm, title='Nouvelle réservation',
-                          form_kwargs={'user': request.user}, success_url='reservation_list')
-
-
-@role_required(*STAFF_FRONT)
-def reservation_edit(request, pk):
-    return crud.form_page(request, form_class=ReservationForm, title='Modifier la réservation',
-                          instance=get_object_or_404(_reservations(request.user), pk=pk),
-                          form_kwargs={'user': request.user}, success_url='reservation_list')
-
-
-@role_required(*STAFF_FRONT)
+@front_desk
 def reservation_delete(request, pk):
     return crud.delete_page(request, model=Reservation, pk=pk, success_url='reservation_list',
                             queryset=_reservations(request.user))
@@ -169,30 +187,30 @@ def _transition(request, pk, allowed, action, ok_msg):
     else:
         action(res)
         messages.success(request, ok_msg)
-    return redirect('reservation_list')
+    return redirect(safe_next(request, reverse('reservation_list')))
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 @require_POST
 def reservation_confirm(request, pk):
     return _transition(request, pk, [Reservation.PENDING], services.confirm_reservation,
                        'Réservation confirmée, facture générée.')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 @require_POST
 def reservation_checkin(request, pk):
     return _transition(request, pk, [Reservation.CONFIRMED], services.check_in, 'Check-in effectué.')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 @require_POST
 def reservation_checkout(request, pk):
     return _transition(request, pk, [Reservation.CHECKED_IN], services.check_out,
                        'Check-out effectué : chambre envoyée au nettoyage.')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 @require_POST
 def reservation_cancel(request, pk):
     return _transition(request, pk, [Reservation.PENDING, Reservation.CONFIRMED],
@@ -234,7 +252,7 @@ def claimed_refuse(request, pk):
 
 
 # ================================================================ RÉCEPTIONNISTE : factures
-@role_required(*STAFF_FRONT)
+@front_desk
 def invoice_list(request):
     qs = _invoices(request.user)
     st = request.GET.get('status')
@@ -247,70 +265,78 @@ def invoice_list(request):
                  ('Montant', lambda i: _money(i.amount)), ('Statut', lambda i: i.get_status_display()),
                  ('Paiement', lambda i: i.get_method_display() or '—'),
                  ('Émise le', lambda i: timezone.localtime(i.issued_at).strftime('%d/%m/%Y'))],
-        extra_actions=[('Marquer payée (espèces)', 'invoice_pay', lambda i: i.status == Invoice.UNPAID)],
+        links=[('Encaisser', 'invoice_pay', lambda i: i.status == Invoice.UNPAID),
+               ('Imprimer', 'invoice_print', None)],
         filters={'name': 'status', 'value': st, 'choices': Invoice.STATUS_CHOICES})
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def invoice_add(request):
     return crud.form_page(request, form_class=InvoiceForm, title='Nouvelle facture',
                           form_kwargs={'user': request.user}, success_url='invoice_list')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def invoice_edit(request, pk):
     return crud.form_page(request, form_class=InvoiceForm, title='Modifier la facture',
                           instance=get_object_or_404(_invoices(request.user), pk=pk),
                           form_kwargs={'user': request.user}, success_url='invoice_list')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def invoice_delete(request, pk):
     return crud.delete_page(request, model=Invoice, pk=pk, success_url='invoice_list',
                             queryset=_invoices(request.user))
 
 
-@role_required(*STAFF_FRONT)
-@require_POST
+@front_desk
 def invoice_pay(request, pk):
+    """Encaissement : le réceptionniste choisit le mode de paiement (espèces, carte, virement)."""
     inv = get_object_or_404(_invoices(request.user), pk=pk)
-    inv.status, inv.method = Invoice.PAID, inv.method or 'cash'
-    inv.save()
-    messages.success(request, 'Facture marquée comme payée.')
-    return redirect('invoice_list')
+    if inv.status == Invoice.PAID:
+        messages.info(request, f'La facture #{inv.pk} est déjà payée.')
+        return redirect('invoice_list')
+    form = PaymentForm(request.POST or None, initial={'method': inv.method or 'cash'})
+    if request.method == 'POST' and form.is_valid():
+        services.pay_invoice(inv, form.cleaned_data['method'])
+        messages.success(request, f'Facture #{inv.pk} payée ({inv.get_method_display()}).')
+        return redirect(safe_next(request, reverse('invoice_list')))
+    return render(request, 'reception/invoice_pay.html', {
+        'invoice': inv, 'form': crud.bootstrapify(form), 'next': request.GET.get('next', '')})
 
 
 # ================================================================ RÉCEPTIONNISTE : planifier un nettoyage
-@role_required(*STAFF_FRONT)
+@front_desk
 def cleaning_list(request):
     return crud.list_page(
-        request, title='Planification des nettoyages',
-        queryset=CleaningTask.objects.select_related('room', 'assigned_to'), base_name='cleaning',
+        request, title='Planification des nettoyages', queryset=_cleaning(request.user), base_name='cleaning',
         columns=[('Chambre', lambda t: t.room.number),
                  ('Agent', lambda t: t.assigned_to.full_name if t.assigned_to else 'Tous'),
                  ('Heure prévue', lambda t: timezone.localtime(t.scheduled_for).strftime('%d/%m %H:%M')),
                  ('Statut', lambda t: t.get_status_display()), ('Note', lambda t: t.note or '—')])
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def cleaning_add(request):
     def after_save(task):
         services.schedule_cleaning(task)   # prévient l'agent de la planification
         services.notify_due_cleaning()     # et, si l'heure est déjà passée, du rappel immédiat
 
     return crud.form_page(request, form_class=CleaningTaskForm, title='Planifier un nettoyage',
-                          success_url='cleaning_list', after_save=after_save)
+                          form_kwargs={'user': request.user}, success_url='cleaning_list', after_save=after_save)
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def cleaning_edit(request, pk):
     return crud.form_page(request, form_class=CleaningTaskForm, title='Modifier le nettoyage',
-                          instance=get_object_or_404(CleaningTask, pk=pk), success_url='cleaning_list')
+                          instance=get_object_or_404(_cleaning(request.user), pk=pk),
+                          form_kwargs={'user': request.user}, success_url='cleaning_list')
 
 
-@role_required(*STAFF_FRONT)
+@front_desk
 def cleaning_delete(request, pk):
-    return crud.delete_page(request, model=CleaningTask, pk=pk, success_url='cleaning_list')
+    return crud.delete_page(request, model=CleaningTask, pk=pk, success_url='cleaning_list',
+                            queryset=_cleaning(request.user))
 
 
 # ================================================================ AGENT DE NETTOYAGE
@@ -354,14 +380,6 @@ def cleaner_mark_done(request, pk):
 
 # ================================================================ CLIENT
 @role_required(ROLE_CLIENT)
-def client_book(request):
-    return crud.form_page(
-        request, form_class=ReservationForm, title='Réserver une chambre',
-        form_kwargs={'user': request.user}, success_url='client_reservations',
-        success_message='Réservation envoyée : la réception va la confirmer.')
-
-
-@role_required(ROLE_CLIENT)
 def client_reservations(request):
     qs = Reservation.objects.filter(client=request.user).select_related('room')
     return crud.list_page(
@@ -391,4 +409,5 @@ def client_invoices(request):
         request, title='Mes factures', queryset=qs, add=False, edit=False, delete=False,
         columns=[('#', lambda i: i.pk), ('Réservation', lambda i: f'#{i.reservation_id} – ch. {i.reservation.room.number}'),
                  ('Montant', lambda i: _money(i.amount)), ('Statut', lambda i: i.get_status_display()),
-                 ('Paiement', lambda i: i.get_method_display() or '—')])
+                 ('Paiement', lambda i: i.get_method_display() or '—')],
+        links=[('Imprimer', 'invoice_print', None)])

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block title %}Aucun hôtel assigné{% endblock %}
+{% block content %}
+<div class="card card-clean" style="max-width:640px"><div class="card-body p-4">
+  <h1 class="h4 font-display"><i class="bi bi-building-exclamation text-warning me-2"></i>Aucun hôtel assigné</h1>
+  <p class="mb-2">Un réceptionniste travaille pour <b>un hôtel précis</b> : réservations, clients, factures et chambres
+    sont ceux de cet hôtel uniquement.</p>
+  <p class="text-secondary mb-3">Votre compte n'est rattaché à aucun hôtel. Demandez à l'administrateur de l'hôtel de
+    vous l'assigner dans <i>Utilisateurs</i>, puis rechargez cette page.</p>
+  <a class="btn btn-primary" href="{% url 'dashboard' %}">Retour au tableau de bord</a>
+</div></div>
+{% endblock %}

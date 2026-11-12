@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% block title %}Encaisser la facture #{{ invoice.pk }}{% endblock %}
+{% block content %}
+<div class="card card-clean" style="max-width:560px"><div class="card-body p-4">
+  <h1 class="h4 font-display mb-3">Encaisser la facture #{{ invoice.pk }}</h1>
+  <dl class="row small mb-4">
+    <dt class="col-5 text-secondary fw-normal">Client</dt><dd class="col-7">{{ invoice.reservation.client.full_name }}</dd>
+    <dt class="col-5 text-secondary fw-normal">Réservation</dt><dd class="col-7">#{{ invoice.reservation_id }} · chambre {{ invoice.reservation.room.number }}</dd>
+    <dt class="col-5 text-secondary fw-normal">Séjour</dt><dd class="col-7">{{ invoice.reservation.check_in|date:"d/m/Y" }} → {{ invoice.reservation.check_out|date:"d/m/Y" }} ({{ invoice.reservation.nights }} nuit{{ invoice.reservation.nights|pluralize }})</dd>
+    <dt class="col-5 text-secondary fw-normal">Montant à encaisser</dt><dd class="col-7 fs-5 fw-bold">{{ invoice.amount|floatformat:2 }} TND</dd>
+  </dl>
+  <form method="post" novalidate>{% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include 'form_fields.html' %}
+    <button class="btn btn-success"><i class="bi bi-cash-coin me-1"></i>Confirmer le paiement</button>
+    <a class="btn btn-light" href="{% url 'invoice_list' %}">Annuler</a>
+  </form>
+</div></div>
+{% endblock %}

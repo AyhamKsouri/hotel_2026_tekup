@@ -146,3 +146,22 @@ body{overflow-x:hidden}section{overflow-x:clip}
 .room-card:hover .room-top i{transform:scale(1.15) rotate(-4deg)}.room-top i{transition:.4s}
 .otp-input{text-align:center;letter-spacing:.6em;font-size:1.6rem;font-weight:700}
 @media(prefers-reduced-motion:reduce){.particles,.marquee-track,.pulse,.rotator{animation:none}}
+
+/* RÉCEPTION : calendrier chambre x jour */
+.cal{font-size:.8rem;min-width:900px}
+.cal th,.cal td{padding:0;vertical-align:middle}
+.cal thead th{padding:.35rem .25rem;font-weight:600;white-space:nowrap}
+.cal .cal-room{padding:.35rem .6rem;white-space:nowrap;position:sticky;left:0;background:#fff;z-index:1}
+.cal td a{display:block;height:2.4rem;line-height:2.4rem;padding:0 .3rem;color:inherit;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:6.5rem}
+.cal td.cal-free a:hover{background:rgba(31,78,140,.12)}
+.cal-key{display:inline-block;width:.9rem;height:.9rem;border-radius:3px;vertical-align:-2px;margin-right:.35rem;border:1px solid #ccd}
+.cal-free{background:#fff}
+.cal-past{background:#f3f4f6}
+.cal-pending{background:#fde9b8}
+.cal-confirmed{background:#cfe0f7}
+.cal-checked_in{background:#bfe7cf}
+.cal-maintenance{background:repeating-linear-gradient(45deg,#eceff3,#eceff3 5px,#dfe3e9 5px,#dfe3e9 10px)}
+.cal .cal-today{box-shadow:inset 0 0 0 2px var(--gold)}
+
+/* RÉCEPTION : facture imprimable */
+@media print{.app-side,.no-print,.alert{display:none!important}.app-main{padding:0!important}}

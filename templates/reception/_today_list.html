@@ -1,0 +1,21 @@
+<div class="col-lg-6"><div class="card card-clean h-100"><div class="card-body">
+  <h2 class="h6 mb-3"><i class="bi {{ icon }} me-1"></i>{{ title }} ({{ items|length }})</h2>
+  {% for r in items %}
+  <div class="d-flex flex-wrap align-items-center gap-2 py-2 border-bottom">
+    <span class="badge text-bg-light border fs-6">{{ r.room.number }}</span>
+    <div class="flex-grow-1" style="min-width:0">
+      <a class="fw-semibold" href="{% url 'reception_client_detail' r.client_id %}">{{ r.client.full_name }}</a>
+      <div class="small text-secondary">
+        {{ r.check_in|date:"d/m" }} → {{ r.check_out|date:"d/m" }} · {{ r.nights }} nuit{{ r.nights|pluralize }} · {{ r.client.telephone }}
+        {% if kind == 'arrival' and r.check_in < today %}<span class="text-danger">· arrivée prévue le {{ r.check_in|date:"d/m" }}</span>{% endif %}
+        {% if kind == 'departure' and r.check_out < today %}<span class="text-danger">· départ prévu le {{ r.check_out|date:"d/m" }}</span>{% endif %}
+      </div>
+      <div class="small">{% include "reception/_invoice_badge.html" %}</div>
+    </div>
+    <form method="post" action="{% if kind == 'arrival' %}{% url 'reservation_checkin' r.pk %}{% else %}{% url 'reservation_checkout' r.pk %}{% endif %}">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button class="btn btn-sm {% if kind == 'arrival' %}btn-success{% else %}btn-outline-primary{% endif %}">{% if kind == 'arrival' %}Check-in{% else %}Check-out{% endif %}</button>
+    </form>
+  </div>
+  {% empty %}<p class="text-secondary mb-0">{{ empty }}</p>{% endfor %}
+</div></div></div>

@@ -152,6 +152,10 @@ DEFAULT_FROM_EMAIL = 'no-reply@hotel.local'
 
 # Authentification
 AUTH_USER_MODEL = 'account.User'
+
+# Les migrations existantes utilisent AutoField : sans ce réglage, Django 6 (BigAutoField par défaut)
+# régénère sans cesse des migrations « Alter field id ».
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 AUTHENTICATION_BACKENDS = ['account.backends.EmailOrCinBackend']
 LOGIN_URL = 'home'
 LOGIN_REDIRECT_URL = 'dashboard'
@@ -167,3 +171,8 @@ PASSWORD_RESET_CODE_TTL = 10 * 60   # secondes
 PASSWORD_RESET_MAX_ATTEMPTS = 5
 
 LANGUAGE_CODE = 'fr-fr'
+
+# Tests plus rapides : hachage de mot de passe léger UNIQUEMENT pendant `manage.py test`
+import sys  # noqa: E402
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

@@ -1,0 +1,98 @@
+﻿Issue Id,Parent Id,Issue Type,Summary,Description,Status,Priority,Story Points,Sprint,Labels
+1,,Epic,EP1 · Comptes et rôles,"Inscription/connexion par espace, rôles, administration des comptes.",Done,Medium,,,epic
+2,,Epic,"EP2 · Hôtels, chambres et réservations","Assistant de création d'hôtel, chambres, réservation client, paiement.",In Progress,Medium,,,epic
+3,,Epic,EP3 · Espace réceptionniste,"Réceptionniste rattaché à UN hôtel : réservations, clients, factures, disponibilité.",Done,Medium,,,epic
+4,,Epic,EP4 · Ménage,"Tâches de nettoyage, rappels, chambre nettoyée -> disponible.",Done,Medium,,,epic
+5,,Epic,EP5 · Restauration et stocks,"Menu du jour, stock alimentaire et équipements.",To Do,Medium,,,epic
+6,,Epic,EP6 · Administration et pilotage,"Employés, prix, promotions, événements, statistiques.",To Do,Medium,,,epic
+7,,Epic,EP7 · Expérience client (IA et avis),"Bracelet généré par IA, avis, historique.",To Do,Medium,,,epic
+8,,Epic,EP8 · Prédiction d'occupation (ML),"Random Forest, XGBoost, Prophet + dashboard.",To Do,Medium,,,epic
+9,,Epic,EP9 · Qualité et dette technique,Bugs et configuration relevés à la revue du code (12/11/2026).,To Do,Medium,,,epic
+10,1,Story,"US01 · En tant que client, je veux créer un compte et me connecter afin d'accéder à mes réservations.","En tant que client, je veux créer un compte et me connecter afin d'accéder à mes réservations.
+
+État au 12/11/2026 : Espaces par rôle, connexion e-mail ou CIN, mot de passe oublié en 3 étapes.",Done,High,3,"Sprint 1 - Comptes, rôles et chambres",Client release-1
+11,1,Story,"US02 · En tant qu'admin, je veux gérer les comptes et les rôles afin de sécuriser l'accès au système.","En tant qu'admin, je veux gérer les comptes et les rôles afin de sécuriser l'accès au système.
+
+État au 12/11/2026 : CRUD utilisateurs + affectation du réceptionniste à un hôtel.",Done,High,5,"Sprint 1 - Comptes, rôles et chambres",Admin release-1
+12,3,Story,"US03 · En tant que réceptionniste, je veux gérer la disponibilité des chambres (normale ou VIP) afin d'éviter les doublons.","En tant que réceptionniste, je veux gérer la disponibilité des chambres (normale ou VIP) afin d'éviter les doublons.
+
+État au 12/11/2026 : Statuts de chambre + calendrier chambre × jour (14 jours) limité à son hôtel.",Done,High,5,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste release-1
+13,2,Story,"US04 · En tant que client, je veux consulter les chambres disponibles et leurs prix afin de choisir mon séjour.","En tant que client, je veux consulter les chambres disponibles et leurs prix afin de choisir mon séjour.
+
+État au 12/11/2026 : Liste/détail des hôtels publiés avec galerie et prix par type.",Done,High,3,"Sprint 1 - Comptes, rôles et chambres",Client release-1
+14,2,Story,"US05 · En tant que client, je veux réserver une chambre pour des dates choisies afin de planifier mon séjour.","En tant que client, je veux réserver une chambre pour des dates choisies afin de planifier mon séjour.
+
+État au 12/11/2026 : Demande multi-chambres, prix en direct. Voir BUG-01 (calcul du prix).",Done,High,8,Sprint 2 - Réserver et payer,Client release-1
+15,2,Story,"US06 · En tant que client, je veux payer ma réservation en ligne afin de la confirmer.","En tant que client, je veux payer ma réservation en ligne afin de la confirmer.
+
+État au 12/11/2026 : Non commencé : seul le paiement en espèces par la réception existe.",To Do,High,8,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",Client release-1
+16,3,Story,"US07 · En tant que réceptionniste, je veux gérer les réservations (confirmer, modifier, annuler) afin de suivre les arrivées.","En tant que réceptionniste, je veux gérer les réservations (confirmer, modifier, annuler) afin de suivre les arrivées.
+
+État au 12/11/2026 : Confirmer/refuser, check-in/out, page Aujourd'hui, modification (chambre, dates, montant), réservation au comptoir.",Done,High,5,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste release-1
+17,3,Story,"US08 · En tant que réceptionniste, je veux gérer les profils clients afin de personnaliser l'accueil.","En tant que réceptionniste, je veux gérer les profils clients afin de personnaliser l'accueil.
+
+État au 12/11/2026 : Liste + recherche, fiche client avec historique dans son hôtel, modification du profil.",Done,Medium,3,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste release-2
+18,3,Story,"US09 · En tant que réceptionniste, je veux gérer les paiements et générer les factures afin de justifier chaque transaction.","En tant que réceptionniste, je veux gérer les paiements et générer les factures afin de justifier chaque transaction.
+
+État au 12/11/2026 : Encaissement avec mode de paiement, facture imprimable regroupée par demande.",Done,High,5,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste release-2
+19,4,Story,"US10 · En tant que cleaner, je veux voir les chambres à nettoyer entre 12h et 13h afin d'organiser mon passage.","En tant que cleaner, je veux voir les chambres à nettoyer entre 12h et 13h afin d'organiser mon passage.
+
+État au 12/11/2026 : Fait ; la fenêtre 12h-13h n'est pas imposée.",Done,Medium,3,"Sprint 3 - Clients, factures et ménage",Cleaner release-2
+20,4,Story,"US11 · En tant que cleaner, je veux marquer une chambre comme nettoyée afin de la rendre disponible.","En tant que cleaner, je veux marquer une chambre comme nettoyée afin de la rendre disponible.",Done,Medium,2,"Sprint 3 - Clients, factures et ménage",Cleaner release-2
+21,5,Story,"US12 · En tant que chef cuisinier, je veux créer le menu de chaque jour afin de le proposer aux clients.","En tant que chef cuisinier, je veux créer le menu de chaque jour afin de le proposer aux clients.",Done,Medium,3,"Sprint 4 - Menu, employés et stock",Chef_cuisinier release-2
+22,5,Story,"US13 · En tant que client, je veux consulter le menu du jour afin de choisir mes repas.","En tant que client, je veux consulter le menu du jour afin de choisir mes repas.",Done,Low,2,"Sprint 4 - Menu, employés et stock",Client release-2
+23,6,Story,"US14 · En tant qu'admin, je veux gérer les employés (services et salaires) afin de suivre le personnel.","En tant qu'admin, je veux gérer les employés (services et salaires) afin de suivre le personnel.
+
+État au 12/11/2026 : Comptes employés OK ; pas de service ni de salaire.",To Do,Medium,5,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",Admin release-2
+24,6,Story,"US15 · En tant qu'admin, je veux gérer les promotions et les prix afin d'adapter l'offre à la saison.","En tant qu'admin, je veux gérer les promotions et les prix afin d'adapter l'offre à la saison.
+
+État au 12/11/2026 : Prix par type de chambre fixés dans l'assistant ; pas de promotions.",To Do,Medium,5,"Sprint 7 - Prix, promotions, statistiques",Admin release-3
+25,6,Story,"US16 · En tant qu'admin, je veux gérer les événements (mariage, Nouvel An...) afin de planifier salles et tarifs.","En tant qu'admin, je veux gérer les événements (mariage, Nouvel An...) afin de planifier salles et tarifs.
+
+État au 12/11/2026 : Événements non rattachés à un hôtel.",Done,Medium,5,"Sprint 4 - Menu, employés et stock",Admin release-3
+26,5,Story,"US17 · En tant qu'admin, je veux gérer le stock d'équipements afin d'éviter les ruptures.","En tant qu'admin, je veux gérer le stock d'équipements afin d'éviter les ruptures.
+
+État au 12/11/2026 : App gestion_equipments vide.",To Do,Medium,5,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",Admin release-2
+27,5,Story,"US18 · En tant qu'admin, je veux être alerté quand un stock est bas afin de réapprovisionner à temps.","En tant qu'admin, je veux être alerté quand un stock est bas afin de réapprovisionner à temps.
+
+État au 12/11/2026 : Libellé « stock bas » affiché ; aucune alerte envoyée.",To Do,Low,3,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",Admin release-2
+28,6,Story,"US19 · En tant qu'admin, je veux consulter les statistiques (occupation, revenus) afin de décider.","En tant qu'admin, je veux consulter les statistiques (occupation, revenus) afin de décider.
+
+État au 12/11/2026 : Compteurs simples seulement.",To Do,Medium,8,"Sprint 7 - Prix, promotions, statistiques",Admin release-3
+29,7,Story,"US20 · En tant que client, je veux recevoir un bracelet de l'hôtel généré par IA afin de personnaliser mon séjour.","En tant que client, je veux recevoir un bracelet de l'hôtel généré par IA afin de personnaliser mon séjour.",To Do,Low,8,Sprint 8 - Bracelet IA et avis,Client release-3
+30,7,Story,"US21 · En tant que client, je veux partager mon avis après mon séjour afin d'aider l'hôtel à s'améliorer.","En tant que client, je veux partager mon avis après mon séjour afin d'aider l'hôtel à s'améliorer.",To Do,Medium,3,Sprint 8 - Bracelet IA et avis,Client release-3
+31,7,Story,"US22 · En tant qu'admin, je veux modérer les avis afin de garder un contenu approprié.","En tant qu'admin, je veux modérer les avis afin de garder un contenu approprié.",To Do,Low,2,Sprint 8 - Bracelet IA et avis,Admin release-3
+32,7,Story,"US23 · En tant que client, je veux consulter mon historique de réservations et mes factures afin de suivre mes séjours.","En tant que client, je veux consulter mon historique de réservations et mes factures afin de suivre mes séjours.
+
+État au 12/11/2026 : Listes « mes réservations » et « mes factures » déjà présentes.",To Do,Medium,3,Sprint 8 - Bracelet IA et avis,Client release-3
+33,6,Story,"US24 · En tant que client, je veux appliquer une promotion à ma réservation afin de profiter des réductions.","En tant que client, je veux appliquer une promotion à ma réservation afin de profiter des réductions.",To Do,Medium,3,"Sprint 7 - Prix, promotions, statistiques",Client release-3
+34,2,Story,"US25 · En tant que client, je veux annuler ma réservation afin de gérer un changement de programme.","En tant que client, je veux annuler ma réservation afin de gérer un changement de programme.",Done,Medium,3,"Sprint 3 - Clients, factures et ménage",Client release-2
+35,8,Story,"US26 · En tant qu'admin, je veux que le système prépare l'historique (réservations, saison, prix, jours fériés) afin d'alimenter la prédiction.","En tant qu'admin, je veux que le système prépare l'historique (réservations, saison, prix, jours fériés) afin d'alimenter la prédiction.",To Do,Medium,5,Sprint 9 - Prédiction d'occupation (ML),Admin release-3
+36,8,Story,"US27 · En tant qu'admin, je veux entraîner Random Forest, XGBoost et Prophet afin d'obtenir le taux d'occupation prévu.","En tant qu'admin, je veux entraîner Random Forest, XGBoost et Prophet afin d'obtenir le taux d'occupation prévu.",To Do,Medium,8,Sprint 9 - Prédiction d'occupation (ML),Admin release-3
+37,8,Story,"US28 · En tant qu'admin, je veux consulter un graphique prévisionnel et les chambres disponibles prévues afin d'anticiper l'activité.","En tant qu'admin, je veux consulter un graphique prévisionnel et les chambres disponibles prévues afin d'anticiper l'activité.",To Do,Medium,5,Sprint 9 - Prédiction d'occupation (ML),Admin release-3
+38,12,Sub-task,"REC-01 · Isolation par hôtel : tâches de ménage, notifications et formulaires limités à l'hôtel du réceptionniste","Isolation par hôtel : tâches de ménage, notifications et formulaires limités à l'hôtel du réceptionniste",Done,High,3,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+39,12,Sub-task,REC-02 · Réceptionniste sans hôtel : accès bloqué avec message clair (au lieu de données vides),Réceptionniste sans hôtel : accès bloqué avec message clair (au lieu de données vides),Done,High,1,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+40,12,Sub-task,REC-03 · Calendrier de disponibilité par date (chambre x jour) pour son hôtel,Calendrier de disponibilité par date (chambre x jour) pour son hôtel,Done,High,3,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+41,16,Sub-task,REC-04 · Modifier une réservation (dates / chambre) avec contrôle de double réservation,Modifier une réservation (dates / chambre) avec contrôle de double réservation,Done,High,2,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+42,16,Sub-task,REC-05 · Réservation au comptoir (walk-in) pour un client existant ou nouveau,Réservation au comptoir (walk-in) pour un client existant ou nouveau,Done,High,3,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+43,16,Sub-task,REC-06 · Supprimer la route héritée /rooms/book/ qui contourne le flux hôtel,Supprimer la route héritée /rooms/book/ qui contourne le flux hôtel,Done,High,1,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+44,17,Sub-task,"REC-07 · Liste des clients ayant réservé dans son hôtel + fiche client (coordonnées, historique des séjours)","Liste des clients ayant réservé dans son hôtel + fiche client (coordonnées, historique des séjours)",Done,High,2,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+45,17,Sub-task,"REC-08 · Modifier le profil d'un client (téléphone, nom...) depuis la réception","Modifier le profil d'un client (téléphone, nom...) depuis la réception",Done,High,1,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+46,18,Sub-task,REC-09 · Encaissement : choix du mode de paiement (espèces / carte / virement),Encaissement : choix du mode de paiement (espèces / carte / virement),Done,High,1,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+47,18,Sub-task,REC-10 · Facture imprimable regroupant toutes les chambres d'une réservation,Facture imprimable regroupant toutes les chambres d'une réservation,Done,High,3,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+48,12,Sub-task,REC-11 · Tests automatisés : isolation entre deux hôtels et deux réceptionnistes,Tests automatisés : isolation entre deux hôtels et deux réceptionnistes,Done,High,2,Sprint 5 - Espace réceptionniste par hôtel,Réceptionniste reception-multi-hotel
+49,9,Bug,BUG-01 · Calcul du prix : chaque chambre est facturée pour TOUTES les personnes (4 pers. / 2 chambres = 8 pers. payées),"Calcul du prix : chaque chambre est facturée pour TOUTES les personnes (4 pers. / 2 chambres = 8 pers. payées)
+
+Fichier : gestion_hotel/pricing.py quote()",To Do,Highest,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
+50,9,Bug,BUG-02 · Mot de passe BD et SECRET_KEY codés en dur ; README (port 5432 / postgres) ≠ settings (5433),"Mot de passe BD et SECRET_KEY codés en dur ; README (port 5432 / postgres) ≠ settings (5433)
+
+Fichier : hotel/settings.py",To Do,High,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
+51,9,Bug,BUG-03 · DEFAULT_AUTO_FIELD absent : makemigrations génère sans cesse des migrations « Alter field id »,"DEFAULT_AUTO_FIELD absent : makemigrations génère sans cesse des migrations « Alter field id »
+
+Fichier : hotel/settings.py",Done,Medium,,Sprint 5 - Espace réceptionniste par hôtel,revue-code
+52,9,Bug,BUG-04 · Règle e-mail client @booking.com : un vrai client ne peut pas s'inscrire ni recevoir le code de réinitialisation (à discuter),"Règle e-mail client @booking.com : un vrai client ne peut pas s'inscrire ni recevoir le code de réinitialisation (à discuter)
+
+Fichier : account/models.py",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
+53,9,Bug,"BUG-05 · Menus, stock et événements non rattachés à un hôtel (multi-hôtel incohérent)","Menus, stock et événements non rattachés à un hôtel (multi-hôtel incohérent)
+
+Fichier : gestion_repas, gestion_hotel.Event",To Do,Medium,,"Sprint 6 - Reliquat R1/R2 (paiement, employés, équipements)",revue-code
