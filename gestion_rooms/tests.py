@@ -295,13 +295,14 @@ class ClientProfileTests(ReceptionBase):
         self.stay('A001')
         url = reverse('reception_client_edit', args=[self.guest.pk])
         c = self.as_(self.recep_a)
-        r = c.post(url, {'nom': 'Ben Ali', 'prenom': 'Ali', 'telephone': '+21699000111', 'email': 'ali2@gmail.com'})
-        self.assertEqual(r.status_code, 200)                          # domaine client obligatoire
-        r = c.post(url, {'nom': 'Ben Ali', 'prenom': 'Ali', 'telephone': '+21699000111', 'email': 'ALI2@booking.com'})
+        r = c.post(url, {'nom': 'Ben Ali', 'prenom': 'Ali', 'telephone': 'abc'})
+        self.assertEqual(r.status_code, 200)                          # téléphone invalide
+        # l'e-mail envoyé est ignoré : la réception ne peut pas détourner la réinitialisation du mot de passe
+        r = c.post(url, {'nom': 'Ben Ali', 'prenom': 'Ali', 'telephone': '+21699000111', 'email': 'pirate@booking.com'})
         self.assertRedirects(r, reverse('reception_client_detail', args=[self.guest.pk]))
         self.guest.refresh_from_db()
         self.assertEqual((self.guest.nom, self.guest.telephone, self.guest.email),
-                         ('Ben Ali', '+21699000111', 'ali2@booking.com'))
+                         ('Ben Ali', '+21699000111', 'ali@booking.com'))
 
 
 class InvoiceTests(ReceptionBase):
@@ -343,3 +344,25 @@ class InvoiceTests(ReceptionBase):
         self.assertEqual(self.as_(self.guest).get(reverse('invoice_print', args=[r1.invoice.pk])).status_code, 200)
         self.assertEqual(self.as_(self.guest_b).get(reverse('invoice_print', args=[r1.invoice.pk])).status_code, 404)
         self.assertEqual(self.as_(self.recep_b).get(reverse('invoice_print', args=[r1.invoice.pk])).status_code, 404)
+
+
+class ButtonsShownOnlyWhenUsableTests(ReceptionBase):
+    def test_check_in_and_edit_buttons_follow_reservation_state(self):
+        future = self.stay('A001', start=5)
+        today = self.stay('A002', start=0)
+        done = self.stay('AV01', start=-6, status=Reservation.CHECKED_OUT)
+        r = self.as_(self.recep_a).get(reverse('reservation_list'))
+        body = r.content.decode()
+        self.assertIn(reverse('reservation_checkin', args=[today.pk]), body)
+        self.assertNotIn(reverse('reservation_checkin', args=[future.pk]), body)
+        self.assertIn(reverse('reservation_edit', args=[future.pk]), body)
+        self.assertNotIn(reverse('reservation_edit', args=[done.pk]), body)
+
+    def test_today_counts_requests_not_rooms(self):
+        b = Booking.objects.create(client=self.guest, hotel=self.hotel_a, full_name='Famille', booking_type='family',
+                                   persons=4, check_in=self.today + timedelta(days=3),
+                                   check_out=self.today + timedelta(days=5), total=Decimal('400'))
+        for n in ('A001', 'A002'):
+            self.stay(n, start=3, status=Reservation.PENDING, invoice=False, booking=b)
+        r = self.as_(self.recep_a).get(reverse('reception_today'))
+        self.assertEqual(r.context['pending'], 1)

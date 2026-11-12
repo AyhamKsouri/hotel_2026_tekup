@@ -31,6 +31,7 @@ class BookingForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.hotel = hotel
         self.allowed_types = {key: label for key, label, *_ in hotel.room_types()}
+        self.capacity = {key: cap for key, _l, _n, _p, cap in hotel.room_types()}
         self.hotel_services = list(hotel.services.all())
 
     def clean_check_in(self):
@@ -80,6 +81,12 @@ class BookingForm(forms.Form):
                 self.add_error('rooms_count', 'Choisissez le type de chaque chambre.')
             else:
                 data['room_types'] = types
+                # les enfants de moins de FREE_UNDER_AGE ans partagent le lit des parents
+                beds = sum(self.capacity[t] for t in types)
+                guests = pricing.chargeable_persons(persons, ages) if persons else 0
+                if guests > beds:
+                    self.add_error('rooms_count', f'Ces chambres accueillent {beds} personne{"s" if beds > 1 else ""} '
+                                                  f'au maximum : ajoutez une chambre ou choisissez une chambre plus grande.')
 
         # --- accès / services cochés (uniquement ceux de CET hôtel)
         wanted = set(self.data.getlist('services'))

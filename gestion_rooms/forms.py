@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 
 from account.models import ROLE_CLEANER, ROLE_RECEPTIONIST
 
@@ -30,6 +31,7 @@ class RoomForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['price_per_night'].validators.append(MinValueValidator(0))
         from gestion_hotel.models import Hotel
         qs = Hotel.objects.filter(completed_step__gte=3)
         if user is not None:
@@ -46,8 +48,13 @@ class InvoiceForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        qs = Reservation.objects.exclude(status__in=[Reservation.CANCELLED, Reservation.REFUSED])
         if user is not None and user.role == ROLE_RECEPTIONIST:
-            self.fields['reservation'].queryset = Reservation.objects.filter(room__hotel_id=user.hotel_id)
+            qs = qs.filter(room__hotel_id=user.hotel_id)
+        if not self.instance.pk:                      # une seule facture par réservation
+            qs = qs.filter(invoice__isnull=True)
+        self.fields['reservation'].queryset = qs
+        self.fields['amount'].validators.append(MinValueValidator(0))
 
     def clean(self):
         data = super().clean()

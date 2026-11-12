@@ -39,7 +39,7 @@ def reception_today(request):
         'arrivals': qs.filter(status=Reservation.CONFIRMED, check_in__lte=today),
         'departures': qs.filter(status=Reservation.CHECKED_IN, check_out__lte=today),
         'in_house': qs.filter(status=Reservation.CHECKED_IN, check_out__gt=today),
-        'pending': qs.filter(status=Reservation.PENDING).count(),
+        'pending': len(services.pending_claims(request.user.hotel_id)),   # demandes, pas chambres
     })
 
 

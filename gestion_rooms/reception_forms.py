@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.utils import timezone
 
-from account.models import ROLE_CLIENT, ROLE_RECEPTIONIST, User as UserModel, validate_email_for_role
+from account.models import ROLE_CLIENT, ROLE_RECEPTIONIST, User as UserModel
 
 from .forms import DateInput
 from .models import Invoice, Reservation, Room
@@ -141,14 +141,11 @@ class ReservationEditForm(_StayDatesMixin, forms.ModelForm):
 
 
 class ClientProfileForm(forms.ModelForm):
+    """La réception corrige l'identité et le téléphone. L'e-mail n'est PAS modifiable ici : il sert à
+    réinitialiser le mot de passe, le changer permettrait de prendre le contrôle du compte du client."""
     class Meta:
         model = User
-        fields = ['nom', 'prenom', 'telephone', 'email']
-
-    def clean_email(self):
-        email = self.cleaned_data['email'].strip().lower()
-        validate_email_for_role(email, ROLE_CLIENT)
-        return email
+        fields = ['nom', 'prenom', 'telephone']
 
 
 class PaymentForm(forms.Form):

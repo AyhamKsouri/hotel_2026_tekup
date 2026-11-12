@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
@@ -77,7 +78,8 @@ def espace(request, slug):
         raise Http404
     if request.user.is_authenticated:
         return redirect('dashboard')
-    can_signup = space['role'] == ROLE_CLIENT or settings.ALLOW_STAFF_SIGNUP
+    # comptes administrateur : jamais d'inscription publique (createsuperuser ou un super-admin)
+    can_signup = space['role'] == ROLE_CLIENT or (settings.ALLOW_STAFF_SIGNUP and space['role'] != ROLE_ADMIN)
     pane = 'login'
     login_form = _bootstrapify(LoginForm())
     signup_form = _bootstrapify(SignupForm())
@@ -337,11 +339,19 @@ def user_add(request):
                           form_kwargs={'admin': request.user}, success_url='user_list')
 
 
+def _protected_admin(request, target):
+    """Un administrateur ordinaire ne peut ni modifier ni supprimer un AUTRE administrateur."""
+    return target.role == ROLE_ADMIN and target.pk != request.user.pk and not request.user.is_superuser
+
+
 @role_required(ROLE_ADMIN)
 def user_edit(request, pk):
     from django.shortcuts import get_object_or_404
+    target = get_object_or_404(User, pk=pk)
+    if _protected_admin(request, target):
+        raise PermissionDenied
     return crud.form_page(request, form_class=UserAdminForm, title='Modifier l\'utilisateur',
-                          instance=get_object_or_404(User, pk=pk),
+                          instance=target,
                           form_kwargs={'admin': request.user}, success_url='user_list')
 
 
@@ -350,5 +360,8 @@ def user_delete(request, pk):
     if pk == request.user.pk:
         messages.error(request, 'Vous ne pouvez pas supprimer votre propre compte.')
         return redirect('user_list')
+    target = User.objects.filter(pk=pk).first()
+    if target is not None and _protected_admin(request, target):
+        raise PermissionDenied
     return crud.delete_page(request, model=User, pk=pk, success_url='user_list',
                             label=lambda u: f'{u.full_name} ({u.email})')

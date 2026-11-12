@@ -63,6 +63,8 @@
 <script>
 (function(){
   var D=JSON.parse(document.getElementById('bookData').textContent), $=function(i){return document.getElementById(i);};
+  // texte saisi par l'admin (noms de services, libellés) : échappé avant insertion HTML
+  var esc=function(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
   var types={};D.types.forEach(function(t){types[t.key]=t;});
   var kidsChk=$('id_has_children'), kidsBox=$('kidsBox'), kidsN=$('id_children_count'), ages=$('agesBox');
   var roomsN=$('id_rooms_count'), roomsBox=$('roomsBox');
@@ -97,7 +99,7 @@
     roomsBox.querySelectorAll('select').forEach(function(s){cur.push(s.value);});
     if(!cur.length)cur=keepRooms; roomsBox.innerHTML='';
     for(var i=0;i<n;i++){var c=document.createElement('div');c.className='col-md-6';
-      var opts=D.types.map(function(t){return '<option value="'+t.key+'">'+t.label+' — '+t.price.toFixed(2)+' TND/nuit</option>';}).join('');
+      var opts=D.types.map(function(t){return '<option value="'+esc(t.key)+'">'+esc(t.label)+' — '+t.price.toFixed(2)+' TND/nuit</option>';}).join('');
       c.innerHTML='<div class="border rounded-3 p-2 d-flex gap-2 align-items-center"><img class="rounded" style="width:64px;height:64px;object-fit:cover;background:#eef1f6" alt="">'+
         '<div class="flex-grow-1"><label class="form-label small mb-0">Chambre '+(i+1)+'</label><select name="room_type" class="form-select form-select-sm">'+opts+'</select></div></div>';
       var sel=c.querySelector('select'); if(cur[i]&&types[cur[i]])sel.value=cur[i];
@@ -116,11 +118,11 @@
     if(nights<1||!persons||!rooms.length){bd.textContent='Renseignez les dates, les personnes et les chambres.';$('total').textContent='0.00 TND';return;}
     var html='<div>'+nights+' nuit'+(nights>1?'s':'')+' · '+pay+' personne'+(pay>1?'s':'')+' payante'+(pay>1?'s':'')+(free?' ('+free+' enfant'+(free>1?'s':'')+' gratuit'+(free>1?'s':'')+')':'')+'</div>', total=0;
     rooms.forEach(function(t,i){var a=t.price*nights*pay;total+=a;
-      html+='<div class="d-flex justify-content-between"><span>Ch. '+(i+1)+' '+t.label+'</span><span>'+fmt(a)+'</span></div>';});
+      html+='<div class="d-flex justify-content-between"><span>Ch. '+(i+1)+' '+esc(t.label)+'</span><span>'+fmt(a)+'</span></div>';});
     document.querySelectorAll('input[name=services]:checked').forEach(function(c){
       var s=D.services.filter(function(x){return String(x.id)===c.value;})[0]; if(!s)return;
       var m=s.billing==='night'?nights:(s.billing==='person'?pay:1), a=s.price*m; total+=a;
-      html+='<div class="d-flex justify-content-between"><span>'+s.name+'</span><span>'+fmt(a)+'</span></div>';});
+      html+='<div class="d-flex justify-content-between"><span>'+esc(s.name)+'</span><span>'+fmt(a)+'</span></div>';});
     bd.innerHTML=html; $('total').textContent=fmt(total);
   }
   function toggleKids(){kidsBox.classList.toggle('d-none',!kidsChk.checked);drawAges();calc();}

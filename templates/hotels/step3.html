@@ -54,9 +54,12 @@
   document.querySelectorAll('[data-add]').forEach(function(b){b.addEventListener('click',function(){
     addRow(b.dataset.add).querySelector('input[type=text]').focus();});});
   document.querySelectorAll('[data-preset]').forEach(function(b){b.addEventListener('click',function(){
-    var kind=b.dataset.preset, row=null;
+    var kind=b.dataset.preset, row=null, existing=null, wanted=b.dataset.name.trim().toLowerCase();
     document.querySelectorAll('#'+kind+'-rows [data-row]:not(.d-none)').forEach(function(r){
-      var t=r.querySelector('input[type=text]'); if(!row && t && !t.value.trim()) row=r;});
+      var t=r.querySelector('input[type=text]'); if(!t) return;
+      if(t.value.trim().toLowerCase()===wanted) existing=r;          // déjà ajouté : pas de doublon
+      if(!row && !t.value.trim()) row=r;});
+    if(existing){ var p=existing.querySelector('input[type=number]')||existing.querySelector('input[type=text]'); p.focus(); return; }
     row=row||addRow(kind);
     var texts=row.querySelectorAll('input[type=text]'); texts[0].value=b.dataset.name;
     if(b.dataset.desc && texts[1]) texts[1].value=b.dataset.desc;

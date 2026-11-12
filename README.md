@@ -62,6 +62,11 @@ Ouvrir <http://127.0.0.1:8000/>.
 python manage.py test                 # avec SQLite : USE_SQLITE=1 python manage.py test
 ```
 
+`account/test_crawl.py` parcourt l'application avec chaque rôle : il ouvre toutes les pages atteignables et
+envoie chaque formulaire / bouton, et échoue si une page plante, affiche du code de gabarit brut ou du texte mal
+encodé. `account/test_security.py` rejoue les failles corrigées (inscription admin, prise de contrôle de comptes,
+XSS, factures payées modifiées…).
+
 ## Démarrage typique
 
 1. L'administrateur se connecte et crée un hôtel (**Mes hôtels → Nouvel hôtel**) : informations, chambres et
@@ -94,6 +99,10 @@ Règles :
 - Pendant un séjour en cours, seule la date de départ peut changer.
 - Annuler une réservation supprime sa facture impayée.
 - Un client créé au comptoir définit son mot de passe avec **Mot de passe oublié**.
+- Check-in seulement à partir de la date d'arrivée ; au check-out, une facture impayée est signalée.
+- Une chambre occupée par un client ne peut pas être passée en « Disponible » ou « Maintenance ».
+- Les factures payées ne sont plus modifiables ; seul l'administrateur peut supprimer une réservation.
+- La réception modifie le nom et le téléphone d'un client, jamais son e-mail (qui sert à réinitialiser le mot de passe).
 
 ## Autres fonctions
 
@@ -101,8 +110,10 @@ Règles :
   En développement, le code s'affiche dans la console du serveur.
 - **Rappels de nettoyage** : envoyés à chaque visite de l'agent et toutes les 60 s dans le navigateur. Pour les
   envoyer sans page ouverte, planifier chaque minute `python manage.py send_cleaning_reminders`.
-- `ALLOW_STAFF_SIGNUP` (`hotel/settings.py`) : mettre `False` en production pour que seuls les clients puissent
-  s'inscrire seuls ; les employés sont alors créés par l'administrateur.
+- **Comptes** : seuls les clients s'inscrivent seuls. Les employés (réceptionnistes, agents, chefs) sont créés par
+  l'administrateur dans **Utilisateurs** (`ALLOW_STAFF_SIGNUP = False` dans `hotel/settings.py`). Un compte
+  administrateur ne s'inscrit jamais publiquement : `createsuperuser`, ou un super-administrateur dans
+  **Utilisateurs**. Un administrateur ordinaire ne peut pas modifier un autre administrateur.
 
 ## Personnalisation
 

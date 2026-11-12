@@ -114,6 +114,10 @@ class UserAdminForm(forms.ModelForm):
         self.fields['hotel'].required = False
         self.fields['hotel'].empty_label = '— Aucun —'
         self.fields['hotel'].label = 'Hôtel où travaille le réceptionniste'
+        # seul un super-administrateur peut créer ou nommer un administrateur
+        self.admin = admin
+        if admin is not None and not admin.is_superuser and self.instance.role != ROLE_ADMIN:
+            self.fields['role'].choices = [c for c in ROLE_CHOICES if c[0] != ROLE_ADMIN]
 
     def clean_email(self):
         return self.cleaned_data['email'].strip().lower()
@@ -142,7 +146,10 @@ class UserAdminForm(forms.ModelForm):
         user = super().save(commit=False)
         if self.cleaned_data.get('password'):
             user.set_password(self.cleaned_data['password'])
-        user.is_staff = user.is_superuser = (user.role == ROLE_ADMIN)
+        # accès à /django-admin/ pour les administrateurs, mais jamais de super-utilisateur créé ici
+        user.is_staff = (user.role == ROLE_ADMIN)
+        if user.role != ROLE_ADMIN:
+            user.is_superuser = False
         if user.role != ROLE_RECEPTIONIST:
             user.hotel = None          # seul un réceptionniste est rattaché à un hôtel
         if commit:

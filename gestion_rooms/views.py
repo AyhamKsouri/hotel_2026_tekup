@@ -143,10 +143,13 @@ def room_availability(request):
 @require_POST
 def room_mark(request, pk, status):
     room = get_object_or_404(_rooms(request.user), pk=pk)
+    if status != Room.OCCUPIED and room.reservations.filter(status=Reservation.CHECKED_IN).exists():
+        messages.error(request, f'Chambre {room.number} : un client y séjourne. Faites d\'abord son check-out.')
+        return redirect('room_availability')
     room.status = status
     room.save(update_fields=['status'])
     messages.success(request, f'Chambre {room.number} : {room.get_status_display()}.')
-    return redirect(request.META.get('HTTP_REFERER') or 'room_availability')
+    return redirect(safe_next(request, reverse('room_availability')))
 
 
 # ================================================================ RÉCEPTIONNISTE : réservations
@@ -158,7 +161,8 @@ def reservation_list(request):
         qs = qs.filter(status=st)
     return crud.list_page(
         request, title='Gestion des réservations', queryset=qs, base_name='reservation',
-        add_label='Nouvelle réservation (comptoir)',
+        add_label='Nouvelle réservation (comptoir)', delete=request.user.role == ROLE_ADMIN,
+        edit_if=lambda r: r.status in (Reservation.PENDING, Reservation.CONFIRMED, Reservation.CHECKED_IN),
         columns=[('#', lambda r: r.pk), ('Client', lambda r: r.client.full_name),
                  ('Chambre', lambda r: r.room.number),
                  ('Arrivée', lambda r: r.check_in.strftime('%d/%m/%Y')),
@@ -166,7 +170,8 @@ def reservation_list(request):
                  ('Total', lambda r: _money(r.total)), ('Statut', lambda r: r.get_status_display())],
         extra_actions=[
             ('Confirmer', 'reservation_confirm', lambda r: r.status == Reservation.PENDING),
-            ('Check-in', 'reservation_checkin', lambda r: r.status == Reservation.CONFIRMED),
+            ('Check-in', 'reservation_checkin',
+             lambda r: r.status == Reservation.CONFIRMED and r.check_in <= timezone.localdate()),
             ('Check-out', 'reservation_checkout', lambda r: r.status == Reservation.CHECKED_IN),
             ('Annuler', 'reservation_cancel',
              lambda r: r.status in (Reservation.PENDING, Reservation.CONFIRMED)),
@@ -174,7 +179,7 @@ def reservation_list(request):
         filters={'name': 'status', 'value': st, 'choices': Reservation.STATUS_CHOICES})
 
 
-@front_desk
+@front_desk(roles=(ROLE_ADMIN,))
 def reservation_delete(request, pk):
     return crud.delete_page(request, model=Reservation, pk=pk, success_url='reservation_list',
                             queryset=_reservations(request.user))
@@ -200,14 +205,22 @@ def reservation_confirm(request, pk):
 @front_desk
 @require_POST
 def reservation_checkin(request, pk):
+    res = get_object_or_404(_reservations(request.user), pk=pk)
+    if res.check_in > timezone.localdate():
+        messages.error(request, f'Check-in impossible avant la date d\'arrivée ({res.check_in:%d/%m/%Y}). '
+                                'Modifiez la réservation si le client arrive plus tôt.')
+        return redirect(safe_next(request, reverse('reservation_list')))
     return _transition(request, pk, [Reservation.CONFIRMED], services.check_in, 'Check-in effectué.')
 
 
 @front_desk
 @require_POST
 def reservation_checkout(request, pk):
-    return _transition(request, pk, [Reservation.CHECKED_IN], services.check_out,
-                       'Check-out effectué : chambre envoyée au nettoyage.')
+    unpaid = Invoice.objects.filter(reservation_id=pk, status=Invoice.UNPAID).first()
+    msg = 'Check-out effectué : chambre envoyée au nettoyage.'
+    if unpaid:
+        msg += f' Attention : la facture #{unpaid.pk} ({unpaid.amount} TND) reste à encaisser.'
+    return _transition(request, pk, [Reservation.CHECKED_IN], services.check_out, msg)
 
 
 @front_desk
@@ -267,6 +280,7 @@ def invoice_list(request):
                  ('Émise le', lambda i: timezone.localtime(i.issued_at).strftime('%d/%m/%Y'))],
         links=[('Encaisser', 'invoice_pay', lambda i: i.status == Invoice.UNPAID),
                ('Imprimer', 'invoice_print', None)],
+        edit_if=lambda i: i.status == Invoice.UNPAID, delete_if=lambda i: i.status == Invoice.UNPAID,
         filters={'name': 'status', 'value': st, 'choices': Invoice.STATUS_CHOICES})
 
 
@@ -276,15 +290,29 @@ def invoice_add(request):
                           form_kwargs={'user': request.user}, success_url='invoice_list')
 
 
+def _unpaid_or_refuse(request, inv):
+    if inv.status == Invoice.PAID:
+        messages.error(request, f'La facture #{inv.pk} est payée : elle ne peut plus être modifiée ni supprimée.')
+        return redirect('invoice_list')
+    return None
+
+
 @front_desk
 def invoice_edit(request, pk):
+    inv = get_object_or_404(_invoices(request.user), pk=pk)
+    refused = _unpaid_or_refuse(request, inv)
+    if refused:
+        return refused
     return crud.form_page(request, form_class=InvoiceForm, title='Modifier la facture',
-                          instance=get_object_or_404(_invoices(request.user), pk=pk),
+                          instance=inv,
                           form_kwargs={'user': request.user}, success_url='invoice_list')
 
 
 @front_desk
 def invoice_delete(request, pk):
+    refused = _unpaid_or_refuse(request, get_object_or_404(_invoices(request.user), pk=pk))
+    if refused:
+        return refused
     return crud.delete_page(request, model=Invoice, pk=pk, success_url='invoice_list',
                             queryset=_invoices(request.user))
 

@@ -299,11 +299,20 @@ class ClientBookingTests(TestCase):
         self.assertTrue(all(x.status == Reservation.PENDING for x in lines))
 
     def test_per_person_service_and_other_hotel_service_ignored(self):
-        self.book(services=[self.resto.pk, self.foreign_service.pk], rooms_count=1, room_type=['normal'])
+        # 3 personnes dont un enfant de 5 ans (gratuit) : 2 payantes, une chambre normale (2 places) suffit
+        self.book(services=[self.resto.pk, self.foreign_service.pk], rooms_count=1, room_type=['normal'],
+                  persons=3, children_count=1, child_age=['5'])
         b = Booking.objects.get()
-        # 600 + restaurant 50 × 3 personnes payantes ; le service d'un autre hôtel est ignoré
-        self.assertEqual(b.total, Decimal('750.00'))
+        # 100 × 2 nuits × 2 payantes = 400 + restaurant 50 × 2 ; le service d'un autre hôtel est ignoré
+        self.assertEqual(b.total, Decimal('500.00'))
         self.assertEqual([e['name'] for e in b.extras], ['Restaurant'])
+
+    def test_room_capacity_is_enforced(self):
+        r = self.book(has_children='', children_count='', child_age=[], persons=5, rooms_count=2,
+                      room_type=['normal', 'vip'], services=[])
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'accueillent 4 personnes au maximum')
+        self.assertFalse(Booking.objects.exists())
 
     def test_no_children_all_pay(self):
         self.book(has_children='', children_count='', child_age=[], persons=2, rooms_count=1,

@@ -161,10 +161,10 @@ LOGIN_URL = 'home'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Inscription publique des comptes employé / admin (domaines @service.com / @admin.com).
-# Mettre False en production : seuls les clients pourront alors s'inscrire seuls,
-# les employés et admins étant créés par un admin depuis son tableau de bord.
-ALLOW_STAFF_SIGNUP = True
+# Inscription publique des comptes employé (@service.com). False (recommandé) : seuls les clients
+# s'inscrivent seuls ; les employés sont créés par un admin dans « Utilisateurs ».
+# Les comptes administrateur ne s'inscrivent jamais publiquement (createsuperuser ou super-admin).
+ALLOW_STAFF_SIGNUP = False
 
 # Code de réinitialisation du mot de passe
 PASSWORD_RESET_CODE_TTL = 10 * 60   # secondes
