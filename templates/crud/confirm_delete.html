@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Supprimer{% endblock %}
+{% block content %}
+<div class="card card-clean border-danger" style="max-width:520px"><div class="card-body p-4"><h1 class="h4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Confirmer la suppression</h1>
+<p>Supprimer définitivement <b>{{ object_label }}</b> ?</p>
+<form method="post">{% csrf_token %}<button class="btn btn-danger">Oui, supprimer</button> <a class="btn btn-light" href="{{ back_url }}">Annuler</a></form></div></div>
+{% endblock %}

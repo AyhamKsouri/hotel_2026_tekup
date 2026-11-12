@@ -1,0 +1,31 @@
+{% extends 'base.html' %}{% block title %}{{ hotel.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div><h1 class="h3 font-display mb-1">{{ hotel.name }}</h1>
+    <div class="text-warning">{% for i in "12345" %}{% if forloop.counter <= hotel.stars %}<i class="bi bi-star-fill"></i>{% endif %}{% endfor %}</div>
+    <div class="text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}, {{ hotel.city }}, {{ hotel.country }} · <i class="bi bi-telephone ms-1 me-1"></i>{{ hotel.phone }}</div></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-primary btn-sm" href="{% url 'hotel_step' hotel.pk 1 %}"><i class="bi bi-pencil me-1"></i>Modifier les infos</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'room_list' %}">Gérer les chambres</a></div>
+</div>
+{% if hotel.description %}<p class="mb-3" style="white-space:pre-line">{{ hotel.description }}</p>{% endif %}
+<div class="row g-3 mb-4">
+  {% for key, label, count, price, cap in types %}
+  <div class="col-sm-6 col-xl-3"><div class="card card-clean h-100"><div class="card-body">
+    {% if key == 'normal' and hotel.image_normal %}<img src="{{ hotel.image_normal.url }}" class="w-100 rounded mb-2" style="height:120px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'vip' and hotel.image_vip %}<img src="{{ hotel.image_vip.url }}" class="w-100 rounded mb-2" style="height:120px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'couple' and hotel.image_couple %}<img src="{{ hotel.image_couple.url }}" class="w-100 rounded mb-2" style="height:120px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'family' and hotel.image_family %}<img src="{{ hotel.image_family.url }}" class="w-100 rounded mb-2" style="height:120px;object-fit:cover" alt="">{% endif %}
+    <div class="fw-bold">Chambre {{ label }}</div><div class="text-secondary small">{{ count }} chambre{{ count|pluralize }} · {{ cap }} pers.</div>
+    <div class="fs-5 fw-bold mt-1">{{ price|floatformat:"-2" }} TND <small class="text-secondary fs-6 fw-normal">/ nuit</small></div></div></div></div>
+  {% endfor %}
+</div>
+<div class="alert alert-primary py-2">Total : <b>{{ hotel.total_rooms }}</b> chambre{{ hotel.total_rooms|pluralize }}</div>
+<div class="card card-clean mb-3"><div class="card-body">{% include 'hotels/_gallery.html' %}</div></div>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card card-clean h-100"><div class="card-body"><h2 class="h6 mb-3">Services</h2>
+    {% for s in services %}<div class="d-flex justify-content-between border-bottom py-1"><span>{{ s.name }}</span><span>{% if s.price == 0 %}Gratuit{% else %}{{ s.price|floatformat:"-2" }} TND <small class="text-secondary">{{ s.get_billing_display }}</small>{% endif %}</span></div>
+    {% empty %}<span class="text-secondary">Aucun service.</span>{% endfor %}</div></div></div>
+  <div class="col-lg-6"><div class="card card-clean h-100"><div class="card-body"><h2 class="h6 mb-3">Formules de réservation</h2>
+    {% for p in plans %}<div class="border-bottom py-1"><div class="d-flex justify-content-between"><b>{{ p.name }}</b><span>{% if p.supplement == 0 %}Inclus{% else %}+ {{ p.supplement|floatformat:"-2" }} TND / nuit{% endif %}</span></div>{% if p.description %}<div class="text-secondary small">{{ p.description }}</div>{% endif %}</div>{% endfor %}</div></div></div>
+</div>
+{% endblock %}

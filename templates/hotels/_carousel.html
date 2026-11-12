@@ -1,0 +1,14 @@
+{# params : cid (id unique), slides, height #}
+{% if slides %}
+<div id="{{ cid }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000" data-bs-pause="false">
+  {% if slides|length > 1 %}<div class="carousel-indicators">{% for s in slides %}<button type="button" data-bs-target="#{{ cid }}" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>{% endfor %}</div>{% endif %}
+  <div class="carousel-inner" style="border-radius:14px">
+    {% for s in slides %}<div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="2000">
+      <img src="{{ s.url }}" class="d-block w-100" style="height:{{ height|default:'220px' }};object-fit:cover" alt="{{ s.caption }}">
+      {% if s.caption %}<div class="carousel-caption d-none d-md-block py-1" style="background:rgba(0,0,0,.45);border-radius:8px;left:8%;right:8%;bottom:.6rem"><small>{{ s.caption }}</small></div>{% endif %}
+    </div>{% endfor %}
+  </div>
+  {% if slides|length > 1 %}<button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+  <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>{% endif %}
+</div>
+{% else %}<div class="d-grid place-items-center text-secondary bg-light" style="height:{{ height|default:'220px' }};border-radius:14px;place-items:center"><i class="bi bi-building fs-1"></i></div>{% endif %}

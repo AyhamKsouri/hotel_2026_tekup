@@ -1,0 +1,12 @@
+{% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+{% for f in form %}
+<div class="mb-3">
+  {% if f.field.widget.input_type == 'checkbox' %}
+    <div class="form-check"><input type="checkbox" class="form-check-input" id="{{ f.id_for_label }}" name="{{ f.html_name }}" {% if f.value %}checked{% endif %}><label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label></div>
+  {% else %}
+    <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}
+  {% endif %}
+  {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+  {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div>
+{% endfor %}

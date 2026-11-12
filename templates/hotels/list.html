@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% block title %}Mes hôtels{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <h1 class="h4 font-display mb-0">Mes hôtels</h1>
+  <a class="btn btn-primary" href="{% url 'hotel_new' %}"><i class="bi bi-plus-lg me-1"></i>Créer mon hôtel</a>
+</div>
+<div class="row g-3">
+{% for h in hotels %}
+  <div class="col-md-6 col-xl-4"><div class="card card-clean h-100">
+    {% if h.image_normal %}<img src="{{ h.image_normal.url }}" class="card-img-top" style="height:160px;object-fit:cover" alt="">{% endif %}
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <h2 class="h5 font-display mb-1">{{ h.name }}</h2>
+        {% if h.is_complete %}<span class="badge text-bg-success">Terminé</span>{% else %}<span class="badge text-bg-warning">Brouillon · étape {{ h.completed_step }}/3</span>{% endif %}
+      </div>
+      <div class="text-warning mb-1">{% for i in "12345" %}{% if forloop.counter <= h.stars %}<i class="bi bi-star-fill"></i>{% endif %}{% endfor %}</div>
+      <div class="text-secondary small"><i class="bi bi-geo-alt me-1"></i>{{ h.city }}, {{ h.country }}</div>
+      {% if h.total_rooms %}<div class="small mt-1"><i class="bi bi-door-open me-1"></i>{{ h.total_rooms }} chambre{{ h.total_rooms|pluralize }}</div>{% endif %}
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+      {% if h.is_complete %}<a class="btn btn-sm btn-outline-primary" href="{% url 'hotel_detail' h.pk %}">Voir</a>
+      {% else %}<a class="btn btn-sm btn-primary" href="{% url 'hotel_step' h.pk h.next_step %}">Continuer</a>{% endif %}
+      <a class="btn btn-sm btn-outline-danger ms-auto" href="{% url 'hotel_delete' h.pk %}"><i class="bi bi-trash"></i></a>
+    </div>
+  </div></div>
+{% empty %}
+  <div class="col-12"><div class="card card-clean"><div class="card-body text-center py-5">
+    <i class="bi bi-building fs-1 text-secondary"></i><p class="mt-2 mb-3">Vous n'avez pas encore créé d'hôtel.</p>
+    <a class="btn btn-primary" href="{% url 'hotel_new' %}">Créer mon premier hôtel</a></div></div></div>
+{% endfor %}
+</div>
+{% endblock %}

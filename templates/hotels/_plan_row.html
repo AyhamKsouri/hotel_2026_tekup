@@ -1,0 +1,7 @@
+<div class="row g-2 align-items-start mb-2 fs-row {% if f.DELETE.value %}d-none{% endif %}" data-row>
+  {% for h in f.hidden_fields %}{{ h }}{% endfor %}<span class="d-none">{{ f.DELETE }}</span>
+  <div class="col-md-3">{{ f.name }}{% for e in f.name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  <div class="col-md-5">{{ f.description }}{% for e in f.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  <div class="col-8 col-md-3"><div class="input-group">{{ f.supplement }}<span class="input-group-text">TND/nuit</span></div>{% for e in f.supplement.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  <div class="col-4 col-md-1"><button type="button" class="btn btn-outline-danger w-100" data-remove title="Retirer"><i class="bi bi-trash"></i></button></div>
+</div>

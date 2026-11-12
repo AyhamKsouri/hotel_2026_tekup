@@ -1,0 +1,65 @@
+{% extends 'hotels/wizard_base.html' %}
+{% block step %}
+{% include 'hotels/_gallery.html' %}
+<hr class="mb-4">
+<form method="post" enctype="multipart/form-data" novalidate id="roomsForm">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+  <div class="row g-3">
+    <div class="col-md-6"><div class="type-box">
+      <h3 class="h6"><i class="bi bi-door-closed me-1"></i>Chambre normale</h3>
+      <label class="form-label fw-semibold" for="{{ form.image_normal.id_for_label }}">Image</label>{{ form.image_normal }}
+      {% for e in form.image_normal.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      <img class="preview {% if not hotel.image_normal %}d-none{% endif %}" id="pv_normal" alt="" {% if hotel.image_normal %}src="{{ hotel.image_normal.url }}"{% endif %}>
+      <label class="form-label fw-semibold mt-3" for="{{ form.count_normal.id_for_label }}">Nombre de chambres normales</label>{{ form.count_normal }}
+      {% for e in form.count_normal.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div></div>
+    <div class="col-md-6"><div class="type-box">
+      <h3 class="h6"><i class="bi bi-gem me-1"></i>Chambre VIP</h3>
+      <label class="form-label fw-semibold" for="{{ form.image_vip.id_for_label }}">Image</label>{{ form.image_vip }}
+      {% for e in form.image_vip.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      <img class="preview {% if not hotel.image_vip %}d-none{% endif %}" id="pv_vip" alt="" {% if hotel.image_vip %}src="{{ hotel.image_vip.url }}"{% endif %}>
+      <label class="form-label fw-semibold mt-3" for="{{ form.count_vip.id_for_label }}">Nombre de chambres VIP</label>{{ form.count_vip }}
+      {% for e in form.count_vip.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div></div>
+    <div class="col-md-6"><div class="type-box">
+      <h3 class="h6"><i class="bi bi-person-hearts me-1"></i>Chambre couple</h3>
+      <label class="form-label fw-semibold" for="{{ form.image_couple.id_for_label }}">Image</label>{{ form.image_couple }}
+      {% for e in form.image_couple.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      <img class="preview {% if not hotel.image_couple %}d-none{% endif %}" id="pv_couple" alt="" {% if hotel.image_couple %}src="{{ hotel.image_couple.url }}"{% endif %}>
+      <label class="form-label fw-semibold mt-3" for="{{ form.count_couple.id_for_label }}">Nombre de chambres couple</label>{{ form.count_couple }}
+      {% for e in form.count_couple.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div></div>
+    <div class="col-md-6"><div class="type-box">
+      <h3 class="h6"><i class="bi bi-people-fill me-1"></i>Chambre familiale</h3>
+      <label class="form-label fw-semibold" for="{{ form.image_family.id_for_label }}">Image</label>{{ form.image_family }}
+      {% for e in form.image_family.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      <img class="preview {% if not hotel.image_family %}d-none{% endif %}" id="pv_family" alt="" {% if hotel.image_family %}src="{{ hotel.image_family.url }}"{% endif %}>
+      <label class="form-label fw-semibold mt-3" for="{{ form.count_family.id_for_label }}">Nombre de chambres familiales</label>{{ form.count_family }}
+      {% for e in form.count_family.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div></div>
+  </div>
+
+  <div class="alert alert-primary d-flex justify-content-between align-items-center mt-4 mb-0">
+    <span><i class="bi bi-calculator me-2"></i>Nombre total de chambres <small class="text-secondary">(calculé automatiquement)</small></span>
+    <b class="fs-4" id="total">0</b>
+  </div>
+
+  <div class="mt-4 d-flex gap-2">
+    <a class="btn btn-light" href="{% url 'hotel_step' hotel.pk 1 %}"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
+    <button class="btn btn-primary">Suivant<i class="bi bi-arrow-right ms-1"></i></button>
+  </div>
+</form>
+<script>
+(function(){
+  var inputs=document.querySelectorAll('#roomsForm [data-count]'), total=document.getElementById('total');
+  function calc(){var t=0;inputs.forEach(function(i){var v=parseInt(i.value,10);if(v>0)t+=v;});total.textContent=t;}
+  inputs.forEach(function(i){i.addEventListener('input',calc);});calc();
+  [['id_image_normal','pv_normal'],['id_image_vip','pv_vip'],['id_image_couple','pv_couple'],['id_image_family','pv_family']].forEach(function(p){
+    var f=document.getElementById(p[0]),img=document.getElementById(p[1]);if(!f)return;
+    f.addEventListener('change',function(){var file=f.files[0];if(!file)return;
+      var r=new FileReader();r.onload=function(e){img.src=e.target.result;img.classList.remove('d-none');};r.readAsDataURL(file);});
+  });
+})();
+</script>
+{% endblock %}

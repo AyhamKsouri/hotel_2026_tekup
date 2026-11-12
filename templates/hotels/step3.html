@@ -1,0 +1,69 @@
+{% extends 'hotels/wizard_base.html' %}
+{% block step %}
+<form method="post" novalidate id="pricingForm">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+  <!-- Prix par type de chambre -->
+  <h3 class="h6 fw-bold"><i class="bi bi-tag me-1"></i>Prix par type de chambre <small class="text-secondary fw-normal">(par nuit)</small></h3>
+  <div class="row g-3 mb-4">
+    {% for f in form %}<div class="col-sm-6 col-lg-3">
+      <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>
+      <div class="input-group">{{ f }}<span class="input-group-text">TND</span></div>
+      {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
+  </div>
+
+  <!-- Services -->
+  <h3 class="h6 fw-bold"><i class="bi bi-stars me-1"></i>Services disponibles et leur prix</h3>
+  <p class="text-secondary small mb-2">Cliquez sur un service pour l'ajouter, ou créez le vôtre. Prix 0 = gratuit.</p>
+  <div class="d-flex flex-wrap gap-2 mb-3">{% for p in service_presets %}<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset="services" data-name="{{ p }}">+ {{ p }}</button>{% endfor %}</div>
+  {{ services.management_form }}
+  {% for e in services.non_form_errors %}<div class="alert alert-danger py-2">{{ e }}</div>{% endfor %}
+  <div id="services-rows">{% for f in services.forms %}{% include 'hotels/_service_row.html' %}{% endfor %}</div>
+  <button type="button" class="btn btn-sm btn-light" data-add="services"><i class="bi bi-plus-lg me-1"></i>Ajouter un service</button>
+
+  <hr class="my-4">
+
+  <!-- Formules -->
+  <h3 class="h6 fw-bold"><i class="bi bi-calendar-check me-1"></i>Formules de réservation</h3>
+  <p class="text-secondary small mb-2">Le supplément est ajouté au prix de la chambre, par nuit. Au moins une formule est requise.</p>
+  <div class="d-flex flex-wrap gap-2 mb-3">{% for name, desc in plan_presets %}<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset="plans" data-name="{{ name }}" data-desc="{{ desc }}">+ {{ name }}</button>{% endfor %}</div>
+  {{ plans.management_form }}
+  {% for e in plans.non_form_errors %}<div class="alert alert-danger py-2">{{ e }}</div>{% endfor %}
+  <div id="plans-rows">{% for f in plans.forms %}{% include 'hotels/_plan_row.html' %}{% endfor %}</div>
+  <button type="button" class="btn btn-sm btn-light" data-add="plans"><i class="bi bi-plus-lg me-1"></i>Ajouter une formule</button>
+
+  <div class="alert alert-light border mt-4 mb-0 small"><i class="bi bi-info-circle me-1"></i>
+    En validant, les <b>{{ hotel.total_rooms }}</b> chambre{{ hotel.total_rooms|pluralize }} sont créées automatiquement avec les prix ci-dessus.</div>
+
+  <div class="mt-4 d-flex gap-2">
+    <a class="btn btn-light" href="{% url 'hotel_step' hotel.pk 2 %}"><i class="bi bi-arrow-left me-1"></i>Précédent</a>
+    <button class="btn btn-success"><i class="bi bi-check2-circle me-1"></i>Terminer et créer l'hôtel</button>
+  </div>
+</form>
+
+<template id="tpl-services">{% with f=services.empty_form %}{% include 'hotels/_service_row.html' %}{% endwith %}</template>
+<template id="tpl-plans">{% with f=plans.empty_form %}{% include 'hotels/_plan_row.html' %}{% endwith %}</template>
+<script>
+(function(){
+  function addRow(kind){
+    var total=document.getElementById('id_'+kind+'-TOTAL_FORMS'), n=parseInt(total.value,10);
+    var html=document.getElementById('tpl-'+kind).innerHTML.replace(/__prefix__/g,n);
+    var box=document.getElementById(kind+'-rows'); box.insertAdjacentHTML('beforeend',html);
+    total.value=n+1; return box.lastElementChild;
+  }
+  document.querySelectorAll('[data-add]').forEach(function(b){b.addEventListener('click',function(){
+    addRow(b.dataset.add).querySelector('input[type=text]').focus();});});
+  document.querySelectorAll('[data-preset]').forEach(function(b){b.addEventListener('click',function(){
+    var kind=b.dataset.preset, row=null;
+    document.querySelectorAll('#'+kind+'-rows [data-row]:not(.d-none)').forEach(function(r){
+      var t=r.querySelector('input[type=text]'); if(!row && t && !t.value.trim()) row=r;});
+    row=row||addRow(kind);
+    var texts=row.querySelectorAll('input[type=text]'); texts[0].value=b.dataset.name;
+    if(b.dataset.desc && texts[1]) texts[1].value=b.dataset.desc;
+    var nxt=row.querySelector('input[type=number]'); if(nxt) nxt.focus();});});
+  document.getElementById('pricingForm').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-remove]'); if(!btn) return;
+    var row=btn.closest('[data-row]'); row.querySelector('input[type=checkbox]').checked=true; row.classList.add('d-none');});
+})();
+</script>
+{% endblock %}

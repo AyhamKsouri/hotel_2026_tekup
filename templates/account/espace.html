@@ -1,0 +1,56 @@
+{% extends 'site_base.html' %}{% load static %}
+{% block title %}{{ space.title }} · {{ HOTEL_NAME }}{% endblock %}
+{% block bodyattrs %}data-pane="{{ pane }}"{% endblock %}
+{% block body %}
+<main class="auth-page" style="--c1:{{ space.c1 }};--c2:{{ space.c2 }}">
+  <video data-bg autoplay muted loop playsinline><source src="{% static 'videos/hero.mp4' %}" type="video/mp4"></video>
+  <div class="card auth-card">
+    <div class="auth-head">
+      <div class="ico"><i class="bi {{ space.icon }}"></i></div>
+      <h1 class="h4 font-display mb-1">{{ space.title }}</h1>
+      <div class="small opacity-75">{{ HOTEL_NAME }} · e-mail en {{ space.domain }}</div>
+    </div>
+    <div class="card-body p-4">
+      {% if can_signup %}
+      <div class="auth-switch" role="tablist">
+        <button type="button" data-pane="login" class="active"><i class="bi bi-box-arrow-in-right me-1"></i>Connexion</button>
+        <button type="button" data-pane="signup"><i class="bi bi-person-plus me-1"></i>Inscription</button>
+      </div>{% endif %}
+
+      <!-- CONNEXION -->
+      <div class="auth-pane active" data-name="login">
+        <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="login">
+          {% if login_form.non_field_errors %}<div class="alert alert-danger py-2">{{ login_form.non_field_errors.0 }}</div>{% endif %}
+          <div class="form-floating mb-3">{{ login_form.identifier }}<label for="{{ login_form.identifier.id_for_label }}"><i class="bi bi-person-vcard me-1"></i>E-mail ou CIN</label></div>
+          <div class="input-group mb-2">
+            <div class="form-floating flex-grow-1">{{ login_form.password }}<label for="{{ login_form.password.id_for_label }}"><i class="bi bi-lock me-1"></i>Mot de passe</label></div>
+            <button type="button" class="btn btn-outline-secondary" data-toggle-pass tabindex="-1"><i class="bi bi-eye"></i></button>
+          </div>
+          <div class="text-end mb-3"><a class="small" href="{% url 'reset_step1' %}">Mot de passe oublié ?</a></div>
+          <button class="btn btn-space w-100">Se connecter <i class="bi bi-arrow-right ms-1"></i></button>
+        </form>
+        {% if can_signup %}<p class="text-center small text-secondary mt-3 mb-0">Pas encore de compte ? <a href="#signup" data-pane="signup" onclick="return false">Créer un compte</a></p>{% endif %}
+      </div>
+
+      <!-- INSCRIPTION -->
+      {% if can_signup %}
+      <div class="auth-pane" data-name="signup">
+        <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="signup">
+          {% if signup_form.non_field_errors %}<div class="alert alert-danger py-2">{{ signup_form.non_field_errors.0 }}</div>{% endif %}
+          <div class="row g-2">
+            {% for f in signup_fields %}
+            <div class="{% if f.name == 'nom' or f.name == 'prenom' or f.name == 'password1' or f.name == 'password2' %}col-sm-6{% else %}col-12{% endif %}">
+              <div class="form-floating">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label></div>
+              {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              {% if f.name == 'email' and not f.errors %}<div class="form-text">Doit se terminer par <b>{{ space.domain }}</b></div>{% endif %}
+            </div>{% endfor %}
+          </div>
+          <button class="btn btn-space w-100 mt-3">Créer mon compte <i class="bi bi-check2-circle ms-1"></i></button>
+        </form>
+        <p class="text-center small text-secondary mt-3 mb-0">Déjà inscrit ? <a href="#login" data-pane="login" onclick="return false">Se connecter</a></p>
+      </div>{% endif %}
+    </div>
+    <div class="card-footer bg-light text-center small"><a href="{% url 'home' %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Retour à l'accueil</a></div>
+  </div>
+</main>
+{% endblock %}

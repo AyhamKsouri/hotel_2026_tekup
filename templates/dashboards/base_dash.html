@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+<div class="rounded-4 p-4 mb-4 text-white" style="background:linear-gradient(135deg,var(--navy),var(--navy2))">
+  <h1 class="h3 font-display mb-1">{% block heading %}{% endblock %}</h1><span class="opacity-75">{% now "l d F Y" %}</span></div>
+{% block profile %}{% endblock %}
+<div class="row g-3 mb-4">{% for label, value in stats %}
+  <div class="col-6 col-xl-3"><div class="card stat-tile"><div class="card-body"><b>{{ value }}</b><div class="text-secondary">{{ label }}</div></div></div></div>{% endfor %}</div>
+{% if notes %}<div class="card card-clean mb-4"><div class="card-body"><h2 class="h6"><i class="bi bi-bell-fill text-warning me-1"></i>Notifications non lues</h2>
+{% for n in notes %}<div class="py-1 border-bottom">{{ n.message }} <span class="text-secondary small">· {{ n.created_at|date:"d/m H:i" }}</span></div>{% endfor %}
+<a class="small" href="{% url 'notifications' %}">Voir tout</a></div></div>{% endif %}
+<div class="card card-clean"><div class="card-body"><h2 class="h6 mb-3">Accès rapide</h2><div class="d-flex flex-wrap gap-2">
+{% for label, name in nav_items %}{% if name != 'dashboard' %}<a class="btn btn-outline-primary" href="{% url name %}">{{ label }}</a>{% endif %}{% endfor %}</div></div></div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ HOTEL_NAME }}{% endblock %} · {{ HOTEL_NAME }}</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+<link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/icons/bootstrap-icons.min.css' %}">
+<link rel="stylesheet" href="{% static 'site.css' %}">
+</head>
+<body>
+<div class="d-lg-flex">
+  <aside class="app-side p-3 text-white">
+    <a class="d-flex align-items-center gap-2 text-white text-decoration-none mb-1" href="{% url 'home' %}">
+      <img src="{% static 'img/logo.svg' %}" width="38" height="38" alt=""><span class="font-display fs-5">{{ HOTEL_NAME }}</span></a>
+    <div class="small opacity-75 mb-3 ms-1">{{ user.get_role_display }}</div>
+    <nav class="nav flex-column">
+      {% for label, name in nav_items %}<a class="nav-link {% if request.resolver_match.url_name == name %}active{% endif %}" href="{% url name %}">{{ label }}</a>{% endfor %}
+      <a class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}"><i class="bi bi-bell me-1"></i>Notifications
+        <span class="badge text-bg-danger ms-1 {% if not unread_notifications %}d-none{% endif %}" id="nbadge">{{ unread_notifications }}</span></a>
+    </nav>
+    <form method="post" action="{% url 'logout' %}" class="mt-4">{% csrf_token %}
+      <button class="btn btn-outline-light w-100"><i class="bi bi-box-arrow-left me-1"></i>Déconnexion</button></form>
+  </aside>
+  <main class="app-main flex-grow-1 p-3 p-lg-4">
+    <div class="text-end text-secondary small mb-3"><i class="bi bi-person-circle me-1"></i>{{ user.full_name }} · {{ user.email }}</div>
+    {% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags|default:'info' }}{% endif %} alert-dismissible fade show">{{ m }}<button class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast text-bg-dark"><div class="toast-body" id="toastbody"></div></div></div>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+(function(){
+  var last=-1;
+  function poll(){
+    fetch("{% url 'notifications_poll' %}",{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){
+      var b=document.getElementById('nbadge');
+      if(last>=0&&d.count>last&&d.latest.length){document.getElementById('toastbody').textContent='🔔 '+d.latest[0];bootstrap.Toast.getOrCreateInstance(document.getElementById('toast'),{delay:7000}).show();}
+      last=d.count; if(b){b.textContent=d.count;b.classList.toggle('d-none',!d.count);}
+    }).catch(function(){});
+  }
+  poll();setInterval(poll,60000);
+})();
+</script>
+</body></html>

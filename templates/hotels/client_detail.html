@@ -1,0 +1,35 @@
+{% extends 'base.html' %}{% block title %}{{ hotel.name }}{% endblock %}
+{% block content %}
+<a class="small text-decoration-none" href="{% url 'client_hotels' %}"><i class="bi bi-arrow-left me-1"></i>Tous les hôtels</a>
+<div class="row g-4 mt-1">
+  <div class="col-lg-7">{% include 'hotels/_carousel.html' with cid="hd" slides=slides height="360px" %}</div>
+  <div class="col-lg-5">
+    <h1 class="h3 font-display mb-1">{{ hotel.name }}</h1>
+    <div class="text-warning mb-2">{% for i in "12345" %}{% if forloop.counter <= hotel.stars %}<i class="bi bi-star-fill"></i>{% endif %}{% endfor %}</div>
+    <div class="mb-1"><i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}, {{ hotel.city }}, {{ hotel.country }}</div>
+    <div class="mb-3"><i class="bi bi-telephone me-1"></i>{{ hotel.phone }}</div>
+    {% if hotel.description %}<p style="white-space:pre-line">{{ hotel.description }}</p>{% endif %}
+    <a class="btn btn-primary btn-lg" href="{% url 'client_hotel_book' hotel.pk %}"><i class="bi bi-calendar-check me-1"></i>Réserver</a>
+  </div>
+</div>
+<h2 class="h5 mt-4">Chambres</h2>
+<div class="row g-3 mb-4">
+  {% for key, label, count, price, cap in types %}
+  <div class="col-sm-6 col-xl-3"><div class="card card-clean h-100">
+    {% if key == 'normal' and hotel.image_normal %}<img src="{{ hotel.image_normal.url }}" class="card-img-top" style="height:130px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'vip' and hotel.image_vip %}<img src="{{ hotel.image_vip.url }}" class="card-img-top" style="height:130px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'couple' and hotel.image_couple %}<img src="{{ hotel.image_couple.url }}" class="card-img-top" style="height:130px;object-fit:cover" alt="">{% endif %}
+    {% if key == 'family' and hotel.image_family %}<img src="{{ hotel.image_family.url }}" class="card-img-top" style="height:130px;object-fit:cover" alt="">{% endif %}
+    <div class="card-body"><div class="fw-bold">Chambre {{ label }}</div><div class="text-secondary small">{{ cap }} pers. · {{ count }} chambre{{ count|pluralize }}</div>
+      <div class="fs-5 fw-bold">{{ price|floatformat:"-2" }} TND <small class="text-secondary fs-6 fw-normal">/ nuit</small></div></div></div></div>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card card-clean h-100"><div class="card-body"><h2 class="h6 mb-3">Accès et services</h2>
+    {% for s in hotel.services.all %}<div class="d-flex justify-content-between border-bottom py-1"><span>{{ s.name }}</span><span>{% if s.price == 0 %}Gratuit{% else %}+ {{ s.price|floatformat:"-2" }} TND <small class="text-secondary">{{ s.get_billing_display }}</small>{% endif %}</span></div>
+    {% empty %}<span class="text-secondary">Aucun service supplémentaire.</span>{% endfor %}</div></div></div>
+  <div class="col-lg-6"><div class="card card-clean h-100"><div class="card-body"><h2 class="h6 mb-3">Contact</h2>
+    <div><i class="bi bi-telephone me-1"></i>{{ hotel.phone }}</div><div><i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}, {{ hotel.city }}</div>
+    <div class="text-secondary small mt-3">Enfants de moins de 11 ans : gratuits.</div></div></div></div>
+</div>
+{% endblock %}

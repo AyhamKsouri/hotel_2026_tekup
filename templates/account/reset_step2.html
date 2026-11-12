@@ -1,0 +1,18 @@
+{% extends 'site_base.html' %}{% load static %}
+{% block title %}Mot de passe oublié · {{ HOTEL_NAME }}{% endblock %}
+{% block body %}
+<main class="auth-page">
+  <div class="card auth-card">
+    <div class="auth-head"><div class="ico"><i class="bi bi-shield-check"></i></div><h1 class="h5 font-display mb-1">Étape 2/3 · Code de vérification</h1>
+      <div class="progress mt-2" style="height:6px"><div class="progress-bar bg-warning" style="width:{% widthratio 2 3 100 %}%"></div></div></div>
+    <div class="card-body p-4"><p class="text-secondary">Tapez le code à 6 chiffres envoyé à <b>{{ masked_email }}</b>. Il est valable 10 minutes.</p>
+      <form method="post" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+        {% for f in form %}<div class="form-floating mb-3">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>
+          {% for e in f.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-space w-100">Vérifier le code</button>
+      </form></div>
+    <div class="card-footer bg-light text-center small"><a href="{% url 'home' %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Retour à l'accueil</a></div>
+  </div>
+</main>
+{% endblock %}

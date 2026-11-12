@@ -1,0 +1,134 @@
+{% extends 'base.html' %}{% block title %}Réserver · {{ hotel.name }}{% endblock %}
+{% block content %}
+<a class="small text-decoration-none" href="{% url 'client_hotel_detail' hotel.pk %}"><i class="bi bi-arrow-left me-1"></i>{{ hotel.name }}</a>
+<h1 class="h4 font-display my-2">Réserver à {{ hotel.name }}</h1>
+
+<h2 class="h6 mt-3">Nos types de chambres</h2>
+<div class="row g-2 mb-3">
+  {% for t in types %}<div class="col-6 col-lg-3"><div class="card card-clean h-100">
+    {% if t.image %}<img src="{{ t.image }}" class="card-img-top" style="height:100px;object-fit:cover" alt="">{% endif %}
+    <div class="card-body p-2"><b>{{ t.label }}</b><div class="small text-secondary">{{ t.price|floatformat:"-2" }} TND / nuit</div></div></div></div>{% endfor %}
+</div>
+
+<form method="post" novalidate id="bookForm">{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>{% endif %}
+<div class="row g-4">
+  <div class="col-lg-8"><div class="card card-clean"><div class="card-body p-4"><div class="row g-3">
+    <div class="col-md-8"><label class="form-label fw-semibold" for="id_full_name">Nom complet</label>
+      <input class="form-control {% if form.full_name.errors %}is-invalid{% endif %}" id="id_full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" maxlength="150">
+      {% for e in form.full_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label fw-semibold" for="id_booking_type">Type de réservation</label>
+      <select class="form-select" id="id_booking_type" name="booking_type">{% for v, l in form.fields.booking_type.choices %}<option value="{{ v }}" {% if form.booking_type.value == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><label class="form-label fw-semibold" for="id_check_in">Date d'arrivée</label>
+      <input type="date" class="form-control {% if form.check_in.errors %}is-invalid{% endif %}" id="id_check_in" name="check_in" value="{{ form.check_in.value|default:''|stringformat:'s' }}">
+      {% for e in form.check_in.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label fw-semibold" for="id_check_out">Date de départ</label>
+      <input type="date" class="form-control {% if form.check_out.errors %}is-invalid{% endif %}" id="id_check_out" name="check_out" value="{{ form.check_out.value|default:''|stringformat:'s' }}">
+      {% for e in form.check_out.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label fw-semibold" for="id_duration">Durée du séjour</label>
+      <input type="text" class="form-control bg-light fw-semibold" id="id_duration" value="—" readonly tabindex="-1" aria-live="polite">
+      <div class="form-text">Départ − arrivée, calculée automatiquement.</div></div>
+    <div class="col-md-6"><label class="form-label fw-semibold" for="id_persons">Nombre de personnes <small class="text-secondary fw-normal">(enfants inclus)</small></label>
+      <input type="number" min="1" max="50" class="form-control {% if form.persons.errors %}is-invalid{% endif %}" id="id_persons" name="persons" value="{{ form.persons.value|default:'' }}">
+      {% for e in form.persons.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-6"><label class="form-label fw-semibold" for="id_rooms_count">Nombre de chambres à réserver</label>
+      <input type="number" min="1" max="10" class="form-control {% if form.rooms_count.errors %}is-invalid{% endif %}" id="id_rooms_count" name="rooms_count" value="{{ form.rooms_count.value|default:'' }}">
+      {% for e in form.rooms_count.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+
+    <div class="col-12"><div class="form-check"><input type="checkbox" class="form-check-input" id="id_has_children" name="has_children" {% if form.has_children.value %}checked{% endif %}>
+      <label class="form-check-label fw-semibold" for="id_has_children">Avez-vous des enfants ?</label></div></div>
+    <div class="col-12 d-none" id="kidsBox"><div class="border rounded-3 p-3 bg-light">
+      <label class="form-label fw-semibold" for="id_children_count">Nombre d'enfants</label>
+      <input type="number" min="1" max="20" class="form-control mb-2 {% if form.children_count.errors %}is-invalid{% endif %}" style="max-width:160px" id="id_children_count" name="children_count" value="{{ form.children_count.value|default:'' }}">
+      {% for e in form.children_count.errors %}<div class="text-danger small mb-2">{{ e }}</div>{% endfor %}
+      <div class="row g-2" id="agesBox"></div>
+      <div class="form-text"><i class="bi bi-gift me-1"></i>Moins de 11 ans : gratuit (uniquement pour cet enfant).</div></div></div>
+
+    <div class="col-12"><h3 class="h6 fw-bold mb-2">Type de chaque chambre</h3><div id="roomsBox" class="row g-2"></div></div>
+
+    {% if services %}<div class="col-12"><h3 class="h6 fw-bold mb-2">Accès et services <small class="text-secondary fw-normal">(un ou plusieurs)</small></h3>
+      {% for s in services %}<div class="form-check"><input class="form-check-input" type="checkbox" name="services" value="{{ s.pk }}" id="svc{{ s.pk }}" {% if s.pk|stringformat:'s' in checked %}checked{% endif %}>
+        <label class="form-check-label" for="svc{{ s.pk }}">{{ s.name }} <b>{% if s.price == 0 %}(gratuit){% else %}(+{{ s.price|floatformat:"-2" }} TND){% endif %}</b> <small class="text-secondary">{{ s.get_billing_display }}</small></label></div>{% endfor %}</div>{% endif %}
+  </div></div></div></div>
+
+  <div class="col-lg-4"><div class="card card-clean sticky-top" style="top:1rem"><div class="card-body p-4">
+    <h2 class="h6 mb-3"><i class="bi bi-calculator me-1"></i>Prix calculé automatiquement</h2>
+    <div id="breakdown" class="small mb-3 text-secondary">Renseignez les dates et les chambres.</div>
+    <div class="d-flex justify-content-between align-items-center border-top pt-3"><span class="fw-semibold">Total</span><b class="fs-4" id="total">0.00 TND</b></div>
+    <button class="btn btn-primary w-100 mt-3"><i class="bi bi-check2-circle me-1"></i>Confirmer la réservation</button>
+  </div></div></div>
+</div>
+</form>
+{{ data|json_script:"bookData" }}
+<script>
+(function(){
+  var D=JSON.parse(document.getElementById('bookData').textContent), $=function(i){return document.getElementById(i);};
+  var types={};D.types.forEach(function(t){types[t.key]=t;});
+  var kidsChk=$('id_has_children'), kidsBox=$('kidsBox'), kidsN=$('id_children_count'), ages=$('agesBox');
+  var roomsN=$('id_rooms_count'), roomsBox=$('roomsBox');
+  var keepAges=D.initial.ages.slice(), keepRooms=D.initial.rooms.slice();
+  function fmt(v){return v.toFixed(2)+' TND';}
+
+  // ---- dates : calendrier + durée automatique (départ − arrivée)
+  var inEl=$('id_check_in'), outEl=$('id_check_out'), dur=$('id_duration');
+  function iso(d){var m=d.getMonth()+1,j=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(j<10?'0':'')+j;}
+  function parse(v){var p=v.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function nightsBetween(){return(inEl.value&&outEl.value)?Math.round((parse(outEl.value)-parse(inEl.value))/86400000):0;}
+  function syncDates(){
+    var today=new Date(), base=inEl.value?parse(inEl.value):today;
+    inEl.min=iso(today);                                   // pas de date passée
+    var next=new Date(base.getFullYear(),base.getMonth(),base.getDate()+1);
+    outEl.min=iso(next);                                   // départ au plus tôt le lendemain de l'arrivée
+    if(outEl.value&&nightsBetween()<1)outEl.value='';      // départ devenu invalide : on le vide
+    var n=nightsBetween(); dur.value=n>0?n+' nuit'+(n>1?'s':''):'—';
+  }
+
+  function drawAges(){
+    var n=kidsChk.checked?Math.max(0,Math.min(20,parseInt(kidsN.value,10)||0)):0, cur=[];
+    ages.querySelectorAll('input').forEach(function(i){cur.push(i.value);});
+    if(!cur.length)cur=keepAges; ages.innerHTML='';
+    for(var i=0;i<n;i++){var c=document.createElement('div');c.className='col-6 col-md-3';
+      c.innerHTML='<label class="form-label small mb-0">Âge enfant '+(i+1)+'</label><input type="number" min="0" max="17" name="child_age" class="form-control form-control-sm" required>';
+      c.querySelector('input').value=cur[i]!==undefined?cur[i]:'';ages.appendChild(c);}
+    keepAges=[];
+  }
+  function drawRooms(){
+    var n=Math.max(0,Math.min(10,parseInt(roomsN.value,10)||0)), cur=[];
+    roomsBox.querySelectorAll('select').forEach(function(s){cur.push(s.value);});
+    if(!cur.length)cur=keepRooms; roomsBox.innerHTML='';
+    for(var i=0;i<n;i++){var c=document.createElement('div');c.className='col-md-6';
+      var opts=D.types.map(function(t){return '<option value="'+t.key+'">'+t.label+' — '+t.price.toFixed(2)+' TND/nuit</option>';}).join('');
+      c.innerHTML='<div class="border rounded-3 p-2 d-flex gap-2 align-items-center"><img class="rounded" style="width:64px;height:64px;object-fit:cover;background:#eef1f6" alt="">'+
+        '<div class="flex-grow-1"><label class="form-label small mb-0">Chambre '+(i+1)+'</label><select name="room_type" class="form-select form-select-sm">'+opts+'</select></div></div>';
+      var sel=c.querySelector('select'); if(cur[i]&&types[cur[i]])sel.value=cur[i];
+      sel.addEventListener('change',function(){thumb(this);calc();}); roomsBox.appendChild(c); thumb(sel);}
+    keepRooms=[];
+  }
+  function thumb(sel){var img=sel.closest('.border').querySelector('img'),t=types[sel.value];
+    if(t&&t.image){img.src=t.image;img.style.visibility='visible';}else{img.removeAttribute('src');img.style.visibility='hidden';}}
+
+  function calc(){
+    syncDates(); var bd=$('breakdown'), nights=nightsBetween();
+    var persons=parseInt($('id_persons').value,10)||0, free=0;
+    if(kidsChk.checked)ages.querySelectorAll('input').forEach(function(i){if(i.value!==''&&parseInt(i.value,10)<D.freeAge)free++;});
+    var pay=Math.max(persons-free,0), rooms=[];
+    roomsBox.querySelectorAll('select').forEach(function(s){rooms.push(types[s.value]);});
+    if(nights<1||!persons||!rooms.length){bd.textContent='Renseignez les dates, les personnes et les chambres.';$('total').textContent='0.00 TND';return;}
+    var html='<div>'+nights+' nuit'+(nights>1?'s':'')+' · '+pay+' personne'+(pay>1?'s':'')+' payante'+(pay>1?'s':'')+(free?' ('+free+' enfant'+(free>1?'s':'')+' gratuit'+(free>1?'s':'')+')':'')+'</div>', total=0;
+    rooms.forEach(function(t,i){var a=t.price*nights*pay;total+=a;
+      html+='<div class="d-flex justify-content-between"><span>Ch. '+(i+1)+' '+t.label+'</span><span>'+fmt(a)+'</span></div>';});
+    document.querySelectorAll('input[name=services]:checked').forEach(function(c){
+      var s=D.services.filter(function(x){return String(x.id)===c.value;})[0]; if(!s)return;
+      var m=s.billing==='night'?nights:(s.billing==='person'?pay:1), a=s.price*m; total+=a;
+      html+='<div class="d-flex justify-content-between"><span>'+s.name+'</span><span>'+fmt(a)+'</span></div>';});
+    bd.innerHTML=html; $('total').textContent=fmt(total);
+  }
+  function toggleKids(){kidsBox.classList.toggle('d-none',!kidsChk.checked);drawAges();calc();}
+  kidsChk.addEventListener('change',toggleKids); kidsN.addEventListener('input',function(){drawAges();calc();});
+  ages.addEventListener('input',calc); roomsN.addEventListener('input',function(){drawRooms();calc();});
+  ['id_check_in','id_check_out','id_persons'].forEach(function(i){$(i).addEventListener('input',calc);$(i).addEventListener('change',calc);});
+  document.querySelectorAll('input[name=services]').forEach(function(c){c.addEventListener('change',calc);});
+  toggleKids(); drawRooms(); calc();
+})();
+</script>
+{% endblock %}

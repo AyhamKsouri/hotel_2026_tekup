@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block title %}Connexion{% endblock %}
+{% block auth %}<div class="card"><h2>🏨 Connexion</h2>
+<form method="post" novalidate>{% csrf_token %}{% include 'form_fields.html' %}
+<p><button class="btn" style="width:100%">Se connecter</button></p></form>
+<p><a href="{% url 'reset_step1' %}">Mot de passe oublié ?</a> · <a href="{% url 'signup' %}">Créer un compte</a></p></div>{% endblock %}

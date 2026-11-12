@@ -1,0 +1,27 @@
+{% extends 'base.html' %}{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 font-display mb-0">{{ title }}</h1>{% if subtitle %}<span class="text-secondary">{{ subtitle }}</span>{% endif %}</div>
+  <div class="d-flex gap-2">
+    {% if filters %}<form method="get"><select class="form-select" name="{{ filters.name }}" onchange="this.form.submit()">
+      <option value="">Tous</option>
+      {% for v, l in filters.choices %}<option value="{{ v }}" {% if v == filters.value %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select></form>{% endif %}
+    {% if add_url %}<a class="btn btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>{% endif %}
+  </div>
+</div>
+<div class="card card-clean"><div class="table-responsive">
+{% if rows %}
+<table class="table table-hover align-middle mb-0"><thead class="table-light"><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}<th></th></tr></thead><tbody>
+{% for r in rows %}<tr>
+  {% for c in r.cells %}<td>{{ c }}</td>{% endfor %}
+  <td class="text-end"><div class="d-flex gap-1 justify-content-end flex-wrap">
+    {% for label, url in r.actions %}<form method="post" action="{{ url }}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary">{{ label }}</button></form>{% endfor %}
+    {% if r.edit_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ r.edit_url }}"><i class="bi bi-pencil"></i></a>{% endif %}
+    {% if r.delete_url %}<a class="btn btn-sm btn-outline-danger" href="{{ r.delete_url }}"><i class="bi bi-trash"></i></a>{% endif %}
+  </div></td>
+</tr>{% endfor %}
+</tbody></table>
+{% else %}<div class="text-center text-secondary p-5"><i class="bi bi-inbox fs-1"></i><p class="mb-0">Aucun élément.</p></div>{% endif %}
+</div></div>
+{% endblock %}

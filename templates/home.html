@@ -1,0 +1,187 @@
+{% extends 'site_base.html' %}{% load static %}
+{% block title %}{{ HOTEL_NAME }} · Séjours, restaurant & événements{% endblock %}
+{% block body %}
+<div class="scroll-progress" id="sp"></div>
+<a href="#" class="to-top" id="toTop" aria-label="Haut de page"><i class="bi bi-arrow-up"></i></a>
+<!-- HERO -->
+<header class="hero">
+  <video data-bg autoplay muted loop playsinline poster="{% static 'videos/hero.jpg' %}">
+    <source src="{% static 'videos/hero.mp4' %}" type="video/mp4">
+  </video>
+  <div class="particles" id="particles" aria-hidden="true"></div>
+  <div class="container text-center text-lg-start">
+    <span class="hero-pill reveal"><i class="bi bi-star-fill text-gold"></i> Hôtel 5 étoiles · Réservation en ligne 24h/24</span>
+    <h1 class="font-display fw-bold mt-3 reveal">Bienvenue au <span class="text-gold">{{ HOTEL_NAME }}</span><br>l'élégance pour chaque <span class="rotator text-gold" data-words="séjour|week-end|mariage|voyage d'affaires|escapade"></span></h1>
+    <p class="lead mt-3 reveal">Chambres normales et VIP pour 2 ou 3 personnes, restaurant, événements et un service attentif. Choisissez votre espace pour vous connecter ou créer un compte.</p>
+    <div class="live-strip mt-4 reveal justify-content-center justify-content-lg-start">
+      <span><i class="bi bi-clock"></i> <b id="liveClock">--:--</b></span>
+      <span><i class="bi bi-calendar3"></i> <b id="liveDate"></b></span>
+      <span><i class="bi bi-door-open"></i> <b>{{ n_available }}</b> chambres disponibles</span>
+      <span><i class="bi bi-box-arrow-in-right"></i> Arrivée 14h · Départ 12h</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-4 justify-content-center justify-content-lg-start reveal">
+      <a href="{% url 'espace' 'client' %}" class="btn btn-gold btn-lg rounded-pill px-4"><i class="bi bi-person-heart me-2"></i>Espace Client</a>
+      <a href="{% url 'espace' 'admin' %}" class="btn btn-glass btn-lg rounded-pill px-4"><i class="bi bi-shield-lock me-2"></i>Espace Admin</a>
+      <a href="{% url 'espace' 'reception' %}" class="btn btn-glass btn-lg rounded-pill px-4"><i class="bi bi-bell me-2"></i>Réception</a>
+      <a href="{% url 'espace' 'nettoyage' %}" class="btn btn-glass btn-lg rounded-pill px-4"><i class="bi bi-stars me-2"></i>Nettoyage</a>
+      <a href="{% url 'espace' 'cuisine' %}" class="btn btn-glass btn-lg rounded-pill px-4"><i class="bi bi-egg-fried me-2"></i>Cuisine</a>
+    </div>
+  </div>
+  <a href="#stats" class="scroll-hint fs-3" aria-label="Défiler"><i class="bi bi-chevron-double-down"></i></a>
+</header>
+
+<!-- CHIFFRES -->
+<div class="container stats-band" id="stats"><div class="row g-3">
+  <div class="col-6 col-lg-3 reveal"><div class="stat-card"><b data-count="{{ n_rooms }}">0</b><span><i class="bi bi-door-open me-1"></i>Chambres</span></div></div>
+  <div class="col-6 col-lg-3 reveal"><div class="stat-card"><b data-count="{{ n_vip }}">0</b><span><i class="bi bi-gem me-1"></i>Suites VIP</span></div></div>
+  <div class="col-6 col-lg-3 reveal"><div class="stat-card"><b data-count="{{ n_staff }}">0</b><span><i class="bi bi-people me-1"></i>Collaborateurs</span></div></div>
+  <div class="col-6 col-lg-3 reveal"><div class="stat-card"><b data-count="{{ n_clients }}">0</b><span><i class="bi bi-emoji-smile me-1"></i>Clients inscrits</span></div></div>
+</div></div>
+
+<!-- BANDEAU -->
+<div class="marquee mt-5" aria-hidden="true"><div class="marquee-track">
+  {% for i in '12'|make_list %}<span><i class="bi bi-wifi"></i> Wi-Fi gratuit</span><span><i class="bi bi-cup-hot"></i> Petit-déjeuner</span><span><i class="bi bi-p-square"></i> Parking sécurisé</span><span><i class="bi bi-snow2"></i> Climatisation</span><span><i class="bi bi-headset"></i> Réception 24h/24</span><span><i class="bi bi-egg-fried"></i> Restaurant</span><span><i class="bi bi-balloon-heart"></i> Événements</span><span><i class="bi bi-stars"></i> Ménage quotidien</span>{% endfor %}
+</div></div>
+
+<!-- ESPACES -->
+<section id="espaces"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Accès personnalisé</div>
+    <h2 class="section-title font-display fw-bold">Choisissez votre espace</h2>
+    <p class="text-secondary">Chaque profil dispose de son propre tableau de bord.</p></div>
+  <div class="row g-4">
+    {% for s in SPACES %}
+    <div class="col-md-6 col-lg-4 reveal"><div class="card space-card p-4" style="--c1:{{ s.c1 }};--c2:{{ s.c2 }}">
+      <div class="ico"><i class="bi {{ s.icon }}"></i></div>
+      <h3 class="h5 fw-bold">{{ s.title }}</h3>
+      <p class="text-secondary">{{ s.desc }}</p>
+      <div class="small text-secondary mb-3"><i class="bi bi-envelope-at me-1"></i>e-mail en <b>{{ s.domain }}</b></div>
+      <a class="btn btn-dark rounded-pill mt-auto" href="{% url 'espace' s.slug %}">Entrer <i class="bi bi-arrow-right ms-1"></i></a>
+    </div></div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- CHAMBRES -->
+<section id="chambres" class="bg-soft"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Hébergement</div>
+    <h2 class="section-title font-display fw-bold">Nos chambres</h2>
+    <p class="text-secondary">Normales ou VIP, pour 2 ou 3 personnes.</p></div>
+  <div class="row g-4">
+    {% for r in room_types %}
+    <div class="col-sm-6 col-lg-3 reveal"><div class="card room-card">
+      <div class="room-top {{ r.category }}">
+        <span class="badge text-bg-light tag">{% if r.category == 'vip' %}<i class="bi bi-gem"></i> VIP{% elif r.category == 'couple' %}Couple{% elif r.category == 'family' %}Famille{% else %}Standard{% endif %}</span>
+        <i class="bi {% if r.capacity >= 3 %}bi-people-fill{% else %}bi-person-hearts{% endif %}"></i>
+      </div>
+      <div class="card-body">
+        <h3 class="h5 fw-bold">Chambre {{ r.label }}</h3>
+        <p class="text-secondary mb-2"><i class="bi bi-people me-1"></i>{{ r.capacity }} personnes · <span class="{% if r.count %}text-success{% else %}text-secondary{% endif %}">{{ r.count }} chambre{{ r.count|pluralize }}</span></p>
+        <p class="mb-3">{% if r.price %}<span class="fs-4 fw-bold">{{ r.price|floatformat:"-2" }} TND</span> <small class="text-secondary">/ nuit dès</small>{% else %}<span class="text-secondary">Tarif sur demande</span>{% endif %}</p>
+        <a class="btn btn-outline-dark rounded-pill w-100" href="{% url 'espace' 'client' %}">Réserver</a>
+      </div></div></div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- SERVICES -->
+<section id="services"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Confort</div><h2 class="section-title font-display fw-bold">Des services pensés pour vous</h2></div>
+  <div class="row g-3">
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-wifi"></i><div><h3 class="h6 fw-bold">Wi-Fi haut débit</h3><p class="mb-0 text-secondary">Connexion gratuite dans toutes les chambres et espaces communs.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-cup-hot"></i><div><h3 class="h6 fw-bold">Petit-déjeuner</h3><p class="mb-0 text-secondary">Buffet frais préparé chaque matin par notre chef.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-egg-fried"></i><div><h3 class="h6 fw-bold">Restaurant</h3><p class="mb-0 text-secondary">Menu du jour renouvelé, produits frais : légumes, fruits, viandes.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-balloon-heart"></i><div><h3 class="h6 fw-bold">Événements</h3><p class="mb-0 text-secondary">Soirées, mariages, séminaires : salles équipées et accompagnement.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-stars"></i><div><h3 class="h6 fw-bold">Ménage quotidien</h3><p class="mb-0 text-secondary">Nos équipes nettoient chaque chambre à l'heure convenue.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-headset"></i><div><h3 class="h6 fw-bold">Réception 24h/24</h3><p class="mb-0 text-secondary">Réservations, factures et assistance à toute heure.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-p-square"></i><div><h3 class="h6 fw-bold">Parking sécurisé</h3><p class="mb-0 text-secondary">Parking surveillé pour les clients de l'hôtel.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-snow2"></i><div><h3 class="h6 fw-bold">Climatisation</h3><p class="mb-0 text-secondary">Chambres climatisées avec réglage individuel.</p></div></div></div>
+    <div class="col-md-6 col-lg-4 reveal"><div class="service"><i class="bi bi-credit-card"></i><div><h3 class="h6 fw-bold">Paiement facile</h3><p class="mb-0 text-secondary">Espèces, carte bancaire ou virement ; factures en ligne.</p></div></div></div>
+  </div>
+</div></section>
+
+<!-- VIDEO -->
+<section id="video" class="bg-navy"><div class="container"><div class="row align-items-center g-5">
+  <div class="col-lg-5 reveal"><div class="eyebrow">Visite virtuelle</div>
+    <h2 class="section-title font-display fw-bold">Découvrez l'hôtel en vidéo</h2>
+    <p class="opacity-75">Parcourez nos chambres, notre restaurant et nos salles d'événements avant de réserver.</p>
+    <a class="btn btn-gold rounded-pill px-4" href="{% url 'espace' 'client' %}">Réserver maintenant</a></div>
+  <div class="col-lg-7 reveal"><div class="video-frame">
+    <video controls preload="metadata" playsinline data-bg poster="{% static 'videos/visite.jpg' %}"><source src="{% static 'videos/visite.mp4' %}" type="video/mp4">Votre navigateur ne lit pas les vidéos.</video>
+  </div></div>
+</div></div></section>
+
+<!-- EVENEMENTS -->
+<section id="evenements"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Agenda</div><h2 class="section-title font-display fw-bold">Événements à venir</h2></div>
+  <div class="row g-4">
+    {% for e in events %}
+    <div class="col-md-6 col-lg-4 reveal"><div class="card event-card"><div class="card-body d-flex gap-3">
+      <div class="date-badge"><b>{{ e.start|date:"d" }}</b><small>{{ e.start|date:"M" }}</small></div>
+      <div><h3 class="h6 fw-bold mb-1">{{ e.title }}</h3>
+        <div class="small text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ e.location }} · <i class="bi bi-clock me-1"></i>{{ e.start|date:"H:i" }}</div>
+        <div class="small mt-1">{{ e.price|floatformat:"-2" }} TND · {{ e.capacity }} places</div></div>
+    </div></div></div>
+    {% empty %}
+    <div class="col-12 text-center text-secondary reveal"><i class="bi bi-calendar-event fs-1"></i><p class="mt-2">Aucun événement programmé pour le moment. Revenez bientôt !</p></div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- RESTAURANT -->
+<section id="restaurant" class="bg-soft"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Restaurant</div><h2 class="section-title font-display fw-bold">Le menu d'aujourd'hui</h2></div>
+  <div class="row g-3 justify-content-center">
+    {% for m in menu %}
+    <div class="col-md-6 col-lg-4 reveal"><div class="card menu-item"><div class="card-body d-flex justify-content-between gap-3">
+      <div><span class="badge text-bg-warning mb-1">{{ m.get_category_display }}</span><h3 class="h6 fw-bold mb-0">{{ m.name }}</h3>
+        {% if m.description %}<div class="small text-secondary">{{ m.description }}</div>{% endif %}</div>
+      <div class="fw-bold text-nowrap">{{ m.price|floatformat:"-2" }} TND</div>
+    </div></div></div>
+    {% empty %}
+    <div class="col-12 text-center text-secondary reveal"><i class="bi bi-egg-fried fs-1"></i><p class="mt-2">Le chef publiera bientôt le menu du jour.</p></div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- COMMENT RESERVER -->
+<section id="etapes" class="bg-soft"><div class="container">
+  <div class="text-center mb-5 reveal"><div class="eyebrow">Simple &amp; rapide</div><h2 class="section-title font-display fw-bold">Réservez en 4 étapes</h2></div>
+  <div class="row g-4 steps">
+    <div class="col-sm-6 col-lg-3 reveal"><div class="step"><span class="n">1</span><i class="bi bi-person-plus"></i><h3 class="h6 fw-bold">Créez votre compte</h3><p class="text-secondary mb-0">CIN, e-mail @booking.com et mot de passe.</p></div></div>
+    <div class="col-sm-6 col-lg-3 reveal"><div class="step"><span class="n">2</span><i class="bi bi-calendar-check"></i><h3 class="h6 fw-bold">Choisissez vos dates</h3><p class="text-secondary mb-0">Chambre normale ou VIP, 2 ou 3 personnes.</p></div></div>
+    <div class="col-sm-6 col-lg-3 reveal"><div class="step"><span class="n">3</span><i class="bi bi-patch-check"></i><h3 class="h6 fw-bold">Confirmation</h3><p class="text-secondary mb-0">La réception valide votre réservation.</p></div></div>
+    <div class="col-sm-6 col-lg-3 reveal"><div class="step"><span class="n">4</span><i class="bi bi-receipt"></i><h3 class="h6 fw-bold">Séjournez &amp; payez</h3><p class="text-secondary mb-0">Facture disponible en ligne.</p></div></div>
+  </div>
+</div></section>
+
+<!-- CTA -->
+<section class="cta-band"><div class="container text-center reveal">
+  <h2 class="font-display fw-bold">Prêt pour votre prochain séjour&nbsp;?</h2>
+  <p class="opacity-75 mb-4">Rejoignez nos {{ n_clients }} clients inscrits et réservez en quelques clics.</p>
+  <a class="btn btn-gold btn-lg rounded-pill px-5 pulse" href="{% url 'espace' 'client' %}"><i class="bi bi-calendar2-heart me-2"></i>Réserver maintenant</a>
+</div></section>
+
+<!-- FAQ -->
+<section id="faq"><div class="container" style="max-width:820px">
+  <div class="text-center mb-4 reveal"><div class="eyebrow">Questions fréquentes</div><h2 class="section-title font-display fw-bold">Bon à savoir</h2></div>
+  <div class="accordion reveal" id="faqAcc">
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#q1">Comment créer un compte client ?</button></h3>
+      <div id="q1" class="accordion-collapse collapse show" data-bs-parent="#faqAcc"><div class="accordion-body">Ouvrez l'Espace Client, passez sur « Inscription » et renseignez CIN, nom, prénom, téléphone, e-mail en <b>@booking.com</b> et mot de passe.</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#q2">J'ai oublié mon mot de passe</button></h3>
+      <div id="q2" class="accordion-collapse collapse" data-bs-parent="#faqAcc"><div class="accordion-body">Cliquez sur « Mot de passe oublié » : saisissez votre CIN et votre e-mail, tapez le code à 6 chiffres reçu, puis choisissez un nouveau mot de passe.</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#q3">Quels e-mails pour les employés et admins ?</button></h3>
+      <div id="q3" class="accordion-collapse collapse" data-bs-parent="#faqAcc"><div class="accordion-body">Employés (réception, nettoyage, cuisine) : <b>@service.com</b>. Administrateurs : <b>@admin.com</b>.</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#q4">Puis-je annuler ma réservation ?</button></h3>
+      <div id="q4" class="accordion-collapse collapse" data-bs-parent="#faqAcc"><div class="accordion-body">Oui, depuis « Mes réservations » tant que le séjour n'a pas commencé.</div></div></div>
+  </div>
+</div></section>
+
+<footer><div class="container"><div class="row g-4">
+  <div class="col-lg-4"><a class="d-flex align-items-center gap-2 text-white font-display fs-4 mb-2" href="{% url 'home' %}"><img src="{% static 'img/logo.svg' %}" width="40" height="40" alt="">{{ HOTEL_NAME }}</a>
+    <p>Un séjour confortable, un service attentif, une table soignée.</p></div>
+  <div class="col-6 col-lg-4"><h4 class="h6 text-white">Espaces</h4><ul class="list-unstyled">
+    {% for s in SPACES %}<li><a href="{% url 'espace' s.slug %}">{{ s.title }}</a></li>{% endfor %}</ul></div>
+  <div class="col-6 col-lg-4"><h4 class="h6 text-white">Contact</h4><ul class="list-unstyled">
+    <li><i class="bi bi-envelope me-2"></i>contact@hotel.local</li><li><i class="bi bi-telephone me-2"></i>+216 00 000 000</li><li><i class="bi bi-geo-alt me-2"></i>Tunisie</li></ul></div>
+</div><hr class="border-secondary mt-4"><div class="text-center small">© {% now "Y" %} {{ HOTEL_NAME }} · Tous droits réservés</div></div></footer>
+{% endblock %}

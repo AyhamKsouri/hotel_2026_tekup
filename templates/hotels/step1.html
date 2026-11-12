@@ -1,0 +1,21 @@
+{% extends 'hotels/wizard_base.html' %}
+{% block step %}
+<form method="post" novalidate>{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+  <div class="row g-3">
+    <div class="col-md-8">{% with f=form.name %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+    <div class="col-md-4">{% with f=form.stars %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+    <div class="col-md-6">{% with f=form.phone %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+    <div class="col-md-6"></div>
+    <div class="col-md-6">{% with f=form.country %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}
+      <datalist id="countries">{% for c in countries %}<option value="{{ c }}">{% endfor %}</datalist></div>
+    <div class="col-md-6">{% with f=form.city %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+    <div class="col-12">{% with f=form.address %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+    <div class="col-12">{% with f=form.description %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}{% endwith %}</div>
+  </div>
+  <div class="mt-4 d-flex gap-2">
+    <button class="btn btn-primary">{% if hotel and hotel.is_complete %}<i class="bi bi-check2 me-1"></i>Enregistrer{% else %}Suivant<i class="bi bi-arrow-right ms-1"></i>{% endif %}</button>
+    <a class="btn btn-light" href="{% if hotel %}{% if hotel.is_complete %}{% url 'hotel_detail' hotel.pk %}{% else %}{% url 'hotel_list' %}{% endif %}{% else %}{% url 'hotel_list' %}{% endif %}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

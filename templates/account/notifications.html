@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 font-display mb-0">Notifications</h1>
+<form method="post" action="{% url 'notifications_read' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm">Tout marquer comme lu</button></form></div>
+<div class="card card-clean"><ul class="list-group list-group-flush">{% for n in items %}
+<li class="list-group-item {% if not n.is_read %}fw-bold bg-primary-subtle{% endif %}"><i class="bi bi-bell me-2"></i>{{ n.message }} <span class="text-secondary small fw-normal">· {{ n.created_at|date:"d/m/Y H:i" }}</span></li>
+{% empty %}<li class="list-group-item text-center text-secondary p-4">Aucune notification.</li>{% endfor %}</ul></div>
+{% endblock %}

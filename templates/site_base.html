@@ -1,0 +1,46 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ HOTEL_NAME }}{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+<link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/icons/bootstrap-icons.min.css' %}">
+<link rel="stylesheet" href="{% static 'site.css' %}">
+{% block head %}{% endblock %}
+</head>
+<body {% block bodyattrs %}{% endblock %}>
+<nav class="navbar navbar-expand-lg fixed-top site-nav">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 text-white font-display fs-4" href="{% url 'home' %}">
+      <img src="{% static 'img/logo.svg' %}" alt="Logo {{ HOTEL_NAME }}">{{ HOTEL_NAME }}
+    </a>
+    <button class="navbar-toggler border-0 text-white" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Menu"><i class="bi bi-list fs-1"></i></button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#chambres">Chambres</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#services">Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#video">Visite</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#evenements">Événements</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#restaurant">Restaurant</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Espaces</a>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+            {% for s in SPACES %}<li><a class="dropdown-item" href="{% url 'espace' s.slug %}"><i class="bi {{ s.icon }} me-2" style="color:{{ s.c1 }}"></i>{{ s.title }}</a></li>{% endfor %}
+          </ul>
+        </li>
+        <li class="nav-item ms-lg-2">
+          {% if user.is_authenticated %}<a class="btn btn-gold rounded-pill px-4" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Mon tableau de bord</a>
+          {% else %}<a class="btn btn-gold rounded-pill px-4" href="{% url 'espace' 'client' %}"><i class="bi bi-person-circle me-1"></i>Espace client</a>{% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{% if messages %}<div class="container" style="position:fixed;top:78px;left:0;right:0;z-index:1050">
+  {% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow">{{ m }}<button class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}</div>{% endif %}
+{% block body %}{% endblock %}
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'site.js' %}"></script>
+</body></html>

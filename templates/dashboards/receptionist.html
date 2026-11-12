@@ -1,0 +1,21 @@
+{% extends "dashboards/base_dash.html" %}{% block heading %}Espace réception — réservations, factures, chambres{% endblock %}
+{% block profile %}
+<div class="card card-clean mb-4"><div class="card-body d-flex flex-wrap align-items-center gap-3">
+  <i class="bi bi-person-badge fs-1 text-primary"></i>
+  <div class="flex-grow-1">
+    <div class="text-secondary small">Réceptionniste</div>
+    <div class="h5 font-display mb-0">{{ user.full_name }}</div>
+    <div class="small text-secondary">{{ user.email }} · {{ user.telephone }}</div>
+  </div>
+  <div class="text-md-end">
+    <div class="text-secondary small">Hôtel où vous travaillez</div>
+    {% if user.hotel %}
+      <div class="h5 font-display mb-0"><i class="bi bi-building me-1"></i>{{ user.hotel.name }}</div>
+      <div class="small text-secondary">{{ user.hotel.city }}, {{ user.hotel.country }}</div>
+    {% else %}
+      <div class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>Aucun hôtel assigné</div>
+      <div class="small text-secondary">Demandez à un administrateur de vous rattacher à un hôtel.</div>
+    {% endif %}
+  </div>
+</div></div>
+{% endblock %}
