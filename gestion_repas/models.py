@@ -11,7 +11,8 @@ class Menu(models.Model):
     name = models.CharField('nom du plat', max_length=150)
     category = models.CharField('type', max_length=10, choices=CATEGORY_CHOICES, default=PLAT)
     description = models.TextField(blank=True)
-    price = models.DecimalField('prix', max_digits=7, decimal_places=2)
+    price = models.DecimalField('prix', max_digits=7, decimal_places=2, default=0)
+    image = models.ImageField('image du plat', upload_to='repas/menus/', blank=True)
 
     class Meta:
         ordering = ['-date', 'category', 'name']
@@ -30,6 +31,7 @@ class StockProduct(models.Model):
     quantity = models.DecimalField('quantité', max_digits=8, decimal_places=2)
     unit = models.CharField('unité', max_length=5, choices=UNIT_CHOICES, default='kg')
     threshold = models.DecimalField('seuil d\'alerte', max_digits=8, decimal_places=2, default=5)
+    image = models.ImageField('image du produit', upload_to='repas/stock/', blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

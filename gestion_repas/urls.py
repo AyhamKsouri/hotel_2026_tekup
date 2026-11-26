@@ -4,6 +4,9 @@ from . import views as v
 
 urlpatterns = [
     path('today/', v.menu_today, name='menu_today'),
+    path('today/add/', v.menu_today_add, name='menu_today_add'),
+    path('today/<int:pk>/edit/', v.menu_today_edit, name='menu_today_edit'),
+    path('today/<int:pk>/delete/', v.menu_today_delete, name='menu_today_delete'),
     path('menus/', v.menu_list, name='menu_list'),
     path('menus/add/', v.menu_add, name='menu_add'),
     path('menus/<int:pk>/edit/', v.menu_edit, name='menu_edit'),

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 font-display mb-0">{{ title }}</h1>
+    {% if low_count %}
+      <span class="badge text-bg-danger mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ low_count }} produit{{ low_count|pluralize }} en stock bas</span>
+    {% endif %}
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="input-group" style="max-width:230px">
+        <input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Rechercher un produit…" aria-label="Rechercher">
+        <button class="btn btn-outline-secondary" aria-label="Rechercher"><i class="bi bi-search"></i></button>
+      </div>
+      <select class="form-select w-auto" name="category" onchange="this.form.submit()" aria-label="Filtrer par catégorie">
+        <option value="">Toutes catégories</option>
+        {% for v, l in categories %}
+          <option value="{{ v }}" {% if v == selected_category %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-check ms-1">
+        <input type="checkbox" class="form-check-input" id="id_low" name="low" value="1" {% if low_only %}checked{% endif %} onchange="this.form.submit()">
+        <label class="form-check-label small" for="id_low">Stock bas uniquement</label>
+      </div>
+    </form>
+    <a class="btn btn-primary" href="{% url 'stock_add' %}"><i class="bi bi-plus-lg me-1"></i>Ajouter un produit</a>
+  </div>
+</div>
+
+<div class="card card-clean">
+  <div class="table-responsive">
+    {% if items %}
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Image</th>
+          <th>Produit</th>
+          <th>Catégorie</th>
+          <th>Quantité</th>
+          <th>Seuil d'alerte</th>
+          <th>État</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in items %}
+        <tr>
+          <td style="width:72px">
+            {% if p.image %}
+              <img src="{{ p.image.url }}" alt="{{ p.name }}" class="rounded" style="width:54px;height:54px;object-fit:cover">
+            {% else %}
+              <div class="rounded bg-light text-secondary d-flex align-items-center justify-content-center" style="width:54px;height:54px"><i class="bi bi-basket fs-4"></i></div>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">{{ p.name }}</td>
+          <td><span class="badge text-bg-secondary">{{ p.get_category_display }}</span></td>
+          <td class="fw-semibold">{{ p.quantity|floatformat:"-2" }} {{ p.get_unit_display }}</td>
+          <td class="text-secondary">{{ p.threshold|floatformat:"-2" }} {{ p.get_unit_display }}</td>
+          <td>
+            {% if p.is_low %}
+              <span class="badge text-bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</span>
+            {% else %}
+              <span class="badge text-bg-success">OK</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-1 justify-content-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'stock_edit' p.pk %}" aria-label="Modifier"><i class="bi bi-pencil"></i></a>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'stock_delete' p.pk %}" aria-label="Supprimer"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="text-center text-secondary p-5">
+        <i class="bi bi-basket fs-1"></i>
+        <p class="mb-2">{% if search or selected_category or low_only %}Aucun produit ne correspond à ces critères.{% else %}Aucun produit en stock.{% endif %}</p>
+        <a class="btn btn-sm btn-primary" href="{% url 'stock_add' %}"><i class="bi bi-plus-lg me-1"></i>Ajouter un produit</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
