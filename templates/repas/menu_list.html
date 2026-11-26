@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 font-display mb-0">{{ title }}</h1>
+    {% if subtitle %}<span class="text-secondary">{{ subtitle }}</span>{% endif %}
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <div class="input-group" style="max-width:240px">
+        <input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Rechercher un plat…" aria-label="Rechercher">
+        <button class="btn btn-outline-secondary" aria-label="Rechercher"><i class="bi bi-search"></i></button>
+      </div>
+      {% if not is_today %}
+        <input type="date" class="form-control w-auto" name="date" value="{{ selected_date }}" onchange="this.form.submit()" aria-label="Filtrer par date">
+      {% endif %}
+      <select class="form-select w-auto" name="category" onchange="this.form.submit()" aria-label="Filtrer par type">
+        <option value="">Tous les types</option>
+        {% for v, l in categories %}
+          <option value="{{ v }}" {% if v == selected_category %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <a class="btn btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg me-1"></i>Ajouter un plat</a>
+  </div>
+</div>
+
+<div class="card card-clean">
+  <div class="table-responsive">
+    {% if rows %}
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Image</th>
+          {% if not is_today %}<th>Date</th>{% endif %}
+          <th>Plat</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td style="width:72px">
+            {% if r.obj.image %}
+              <img src="{{ r.obj.image.url }}" alt="{{ r.obj.name }}" class="rounded" style="width:54px;height:54px;object-fit:cover">
+            {% else %}
+              <div class="rounded bg-light text-secondary d-flex align-items-center justify-content-center" style="width:54px;height:54px"><i class="bi bi-egg-fried fs-4"></i></div>
+            {% endif %}
+          </td>
+          {% if not is_today %}<td>{{ r.obj.date|date:"d/m/Y" }}</td>{% endif %}
+          <td class="fw-semibold">{{ r.obj.name }}</td>
+          <td><span class="badge text-bg-warning">{{ r.obj.get_category_display }}</span></td>
+          <td class="text-secondary small">{{ r.obj.description|default:"—" }}</td>
+          <td class="text-end">
+            <div class="d-flex gap-1 justify-content-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{{ r.edit_url }}" aria-label="Modifier"><i class="bi bi-pencil"></i></a>
+              <a class="btn btn-sm btn-outline-danger" href="{{ r.delete_url }}" aria-label="Supprimer"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="text-center text-secondary p-5">
+        <i class="bi bi-egg-fried fs-1"></i>
+        <p class="mb-2">{% if search or selected_category or selected_date %}Aucun plat ne correspond à ces critères.{% else %}Aucun plat enregistré.{% endif %}</p>
+        <a class="btn btn-sm btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg me-1"></i>Ajouter un plat</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

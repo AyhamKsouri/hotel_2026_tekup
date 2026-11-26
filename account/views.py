@@ -237,6 +237,7 @@ def dashboard(request):
     user, today = request.user, timezone.localdate()
     role = user.role
     stats = []
+    extra_ctx = {}
     if role == ROLE_ADMIN:
         stats = [
             ('Mes hôtels', Hotel.objects.filter(owner=user, completed_step__gte=3).count()),
@@ -269,11 +270,29 @@ def dashboard(request):
             ('Déjà nettoyées', mine.filter(status=CleaningTask.DONE).count()),
         ]
     elif role == ROLE_CHEF:
-        stats = [
-            ('Plats au menu aujourd\'hui', Menu.objects.filter(date=today).count()),
-            ('Produits en stock', StockProduct.objects.count()),
-            ('Stock bas', StockProduct.objects.filter(quantity__lte=F('threshold')).count()),
+        today_menus = Menu.objects.filter(date=today)
+        low_stock = StockProduct.objects.filter(quantity__lte=F('threshold'))
+        stock_by_cat = [
+            {
+                'key': key,
+                'label': label,
+                'total': StockProduct.objects.filter(category=key).count(),
+                'low': low_stock.filter(category=key).count(),
+            }
+            for key, label in StockProduct.CATEGORY_CHOICES
         ]
+        stats = [
+            ('Plats aujourd\'hui', today_menus.count()),
+            ('Tous les plats', Menu.objects.count()),
+            ('Produits en stock', StockProduct.objects.count()),
+            ('Alertes stock bas', low_stock.count()),
+        ]
+        extra_ctx = {
+            'chef_today_menus': today_menus[:8],
+            'chef_low_stock': low_stock[:6],
+            'chef_recent_stock': StockProduct.objects.order_by('-updated_at')[:6],
+            'chef_stock_by_cat': stock_by_cat,
+        }
     else:
         stats = [
             ('Mes réservations', Reservation.objects.filter(client=user).count()),
@@ -285,7 +304,7 @@ def dashboard(request):
         ]
     notes = list(user.notifications.filter(is_read=False)[:10])
     return render(request, f'dashboards/{DASHBOARD_ROLES.get(role, "client")}.html',
-                  {'stats': stats, 'notes': notes})
+                  {'stats': stats, 'notes': notes, **extra_ctx})
 
 
 # ---------------------------------------------------------------- notifications

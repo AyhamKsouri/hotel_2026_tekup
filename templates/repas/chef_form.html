@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card card-clean" style="max-width:700px">
+  <div class="card-body p-4">
+    <div class="mb-3">
+      <h1 class="h4 font-display mb-0">{{ title }}</h1>
+      {% if subtitle %}<div class="text-secondary small">{{ subtitle }}</div>{% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+      {% for f in form %}
+        {% if f.name == 'image' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ f.id_for_label }}">
+              <i class="bi bi-image me-1"></i>{{ f.label }}
+            </label>
+            <div class="border rounded-3 p-3 bg-light">
+              <div class="d-flex flex-wrap align-items-center gap-3">
+                <img id="imgPreview"
+                     {% if instance and instance.image %}src="{{ instance.image.url }}"{% endif %}
+                     alt="Aperçu" class="rounded border {% if not instance or not instance.image %}d-none{% endif %}"
+                     style="width:96px;height:96px;object-fit:cover">
+                <div id="imgPlaceholder" class="rounded border bg-white text-secondary d-flex align-items-center justify-content-center {% if instance and instance.image %}d-none{% endif %}"
+                     style="width:96px;height:96px">
+                  <i class="bi bi-camera fs-2"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <input type="file" name="{{ f.html_name }}" id="{{ f.id_for_label }}" accept="image/*" class="form-control{% if f.errors %} is-invalid{% endif %}">
+                  <div class="form-text">Importer une image depuis votre PC (JPG, PNG, WEBP · 5 Mo max).</div>
+                  {% if instance and instance.image %}
+                    <div class="form-check mt-2">
+                      <input type="checkbox" class="form-check-input" id="image-clear_id" name="{{ f.html_name }}-clear">
+                      <label class="form-check-label small text-danger" for="image-clear_id">Supprimer l'image actuelle</label>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% for e in f.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>
+            {{ f }}
+            {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+            {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Enregistrer</button>
+        <a class="btn btn-light" href="{{ back_url }}">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+(function(){
+  var inp = document.getElementById('id_image');
+  var pv = document.getElementById('imgPreview');
+  var ph = document.getElementById('imgPlaceholder');
+  var clr = document.getElementById('image-clear_id');
+  if(!inp || !pv) return;
+  inp.addEventListener('change', function(){
+    var file = inp.files && inp.files[0];
+    if(!file) return;
+    if(clr) clr.checked = false;
+    var r = new FileReader();
+    r.onload = function(e){
+      pv.src = e.target.result;
+      pv.classList.remove('d-none');
+      if(ph) ph.classList.add('d-none');
+    };
+    r.readAsDataURL(file);
+  });
+})();
+</script>
+{% endblock %}

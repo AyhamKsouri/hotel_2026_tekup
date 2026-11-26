@@ -1,1 +1,174 @@
-{% extends "dashboards/base_dash.html" %}{% block heading %}Espace cuisine — menu et stock{% endblock %}
+{% extends "dashboards/base_dash.html" %}
+{% block heading %}Espace cuisine — Tableau de bord du chef{% endblock %}
+{% block profile %}
+<div class="card card-clean mb-4">
+  <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width:56px;height:56px">
+        <i class="bi bi-egg-fried fs-3"></i>
+      </div>
+      <div>
+        <div class="text-secondary small">Chef cuisinier</div>
+        <div class="h5 font-display mb-0">{{ user.full_name }}</div>
+        <div class="small text-secondary">{{ user.email }} · {{ user.telephone }}</div>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" href="{% url 'menu_today_add' %}"><i class="bi bi-plus-lg me-1"></i>Plat du jour</a>
+      <a class="btn btn-outline-primary" href="{% url 'menu_add' %}"><i class="bi bi-calendar-plus me-1"></i>Nouveau menu</a>
+      <a class="btn btn-outline-dark" href="{% url 'stock_add' %}"><i class="bi bi-basket me-1"></i>Nouveau produit</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra %}
+<div class="row g-4 mt-1">
+  <!-- Alertes stock bas -->
+  <div class="col-12">
+    <div class="card card-clean {% if chef_low_stock %}border-warning{% endif %}">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h6 mb-0">
+            <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Alertes stock bas
+          </h2>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'stock_list' %}?low=1">Voir tout le stock bas</a>
+        </div>
+        {% if chef_low_stock %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr><th>Produit</th><th>Catégorie</th><th>Quantité</th><th>Seuil</th><th></th></tr>
+              </thead>
+              <tbody>
+                {% for p in chef_low_stock %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      {% if p.image %}
+                        <img src="{{ p.image.url }}" alt="{{ p.name }}" class="rounded" style="width:38px;height:38px;object-fit:cover">
+                      {% else %}
+                        <div class="rounded bg-light text-secondary d-flex align-items-center justify-content-center" style="width:38px;height:38px"><i class="bi bi-basket"></i></div>
+                      {% endif %}
+                      <span class="fw-semibold">{{ p.name }}</span>
+                    </div>
+                  </td>
+                  <td>{{ p.get_category_display }}</td>
+                  <td class="text-danger fw-bold">{{ p.quantity|floatformat:"-2" }} {{ p.get_unit_display }}</td>
+                  <td class="text-secondary">{{ p.threshold|floatformat:"-2" }} {{ p.get_unit_display }}</td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'stock_edit' p.pk %}"><i class="bi bi-pencil me-1"></i>Réapprovisionner</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Tous les produits en stock sont au-dessus du seuil d'alerte.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu d'aujourd'hui -->
+  <div class="col-lg-7">
+    <div class="card card-clean h-100">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h6 mb-0"><i class="bi bi-journal-text text-primary me-1"></i>Menu d'aujourd'hui</h2>
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-primary" href="{% url 'menu_today_add' %}"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'menu_today' %}">Gérer</a>
+          </div>
+        </div>
+        {% if chef_today_menus %}
+          <div class="row g-3">
+            {% for m in chef_today_menus %}
+            <div class="col-sm-6">
+              <div class="border rounded-3 p-2 h-100 d-flex flex-column justify-content-between gap-2">
+                <div class="d-flex gap-2 align-items-start">
+                  {% if m.image %}
+                    <img src="{{ m.image.url }}" alt="{{ m.name }}" class="rounded flex-shrink-0" style="width:56px;height:56px;object-fit:cover">
+                  {% else %}
+                    <div class="rounded bg-light text-secondary d-flex align-items-center justify-content-center flex-shrink-0" style="width:56px;height:56px"><i class="bi bi-egg-fried fs-4"></i></div>
+                  {% endif %}
+                  <div class="min-w-0">
+                    <span class="badge text-bg-warning mb-1">{{ m.get_category_display }}</span>
+                    <div class="fw-semibold text-truncate">{{ m.name }}</div>
+                    {% if m.description %}<div class="small text-secondary text-truncate">{{ m.description }}</div>{% endif %}
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end align-items-center pt-1 border-top">
+                  <div class="d-flex gap-1">
+                    <a class="btn btn-sm btn-outline-secondary py-0 px-2" href="{% url 'menu_today_edit' m.pk %}" aria-label="Modifier"><i class="bi bi-pencil"></i></a>
+                    <a class="btn btn-sm btn-outline-danger py-0 px-2" href="{% url 'menu_today_delete' m.pk %}" aria-label="Supprimer"><i class="bi bi-trash"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center text-secondary py-4">
+            <i class="bi bi-egg-fried fs-2 d-block mb-1"></i>
+            Aucun plat enregistré pour aujourd'hui.
+            <div class="mt-2"><a class="btn btn-sm btn-primary" href="{% url 'menu_today_add' %}">Créer le menu d'aujourd'hui</a></div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- État du stock par catégorie & derniers produits -->
+  <div class="col-lg-5">
+    <div class="card card-clean h-100">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h6 mb-0"><i class="bi bi-box-seam text-primary me-1"></i>Stock des produits</h2>
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-primary" href="{% url 'stock_add' %}"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'stock_list' %}">Tout voir</a>
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          {% for c in chef_stock_by_cat %}
+          <div class="col-4">
+            <a href="{% url 'stock_list' %}?category={{ c.key }}" class="text-decoration-none">
+              <div class="border rounded-3 p-2 text-center bg-light">
+                <div class="small text-secondary">{{ c.label }}</div>
+                <div class="fw-bold fs-5 text-dark">{{ c.total }}</div>
+                {% if c.low %}<span class="badge text-bg-danger">{{ c.low }} bas</span>{% else %}<span class="badge text-bg-success">OK</span>{% endif %}
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        <h3 class="small text-uppercase text-secondary fw-bold mb-2">Derniers produits mis à jour</h3>
+        {% if chef_recent_stock %}
+          <div class="list-group list-group-flush">
+            {% for p in chef_recent_stock %}
+            <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" alt="{{ p.name }}" class="rounded flex-shrink-0" style="width:36px;height:36px;object-fit:cover">
+                {% else %}
+                  <div class="rounded bg-light text-secondary d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px"><i class="bi bi-basket"></i></div>
+                {% endif %}
+                <div class="min-w-0">
+                  <div class="fw-semibold text-truncate">{{ p.name }}</div>
+                  <div class="small text-secondary">{{ p.get_category_display }} · {{ p.quantity|floatformat:"-2" }} {{ p.get_unit_display }}</div>
+                </div>
+              </div>
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'stock_edit' p.pk %}" aria-label="Modifier"><i class="bi bi-pencil"></i></a>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-secondary small">Aucun produit enregistré en stock.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
