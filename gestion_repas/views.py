@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import messages
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -32,6 +34,10 @@ def _render_menu_list(request, *, queryset, title, subtitle, is_today, add_url_n
     cat = request.GET.get('category', '')
     q = (request.GET.get('q') or '').strip()
     date_filter = request.GET.get('date', '') if not is_today else ''
+    try:                                   # date invalide dans l'URL : filtre ignoré (pas d'erreur 500)
+        date.fromisoformat(date_filter) if date_filter else None
+    except ValueError:
+        date_filter = ''
     qs = queryset
     if cat:
         qs = qs.filter(category=cat)
@@ -232,6 +238,5 @@ def client_menu(request):
             ('Plat', lambda m: m.name),
             ('Type', lambda m: m.get_category_display()),
             ('Description', lambda m: m.description or '—'),
-            ('Prix', lambda m: f'{m.price:.2f} TND'),
         ],
     )

@@ -267,3 +267,27 @@ class ChefSpaceTests(TestCase):
         resp = self.client.post(reverse('stock_delete', args=[prod.pk]))
         self.assertRedirects(resp, reverse('stock_list'))
         self.assertFalse(StockProduct.objects.filter(pk=prod.pk).exists())
+
+
+class ChefRegressionTests(TestCase):
+    """Corrections de la revue du 27/11/2026."""
+
+    def setUp(self):
+        self.chef = User.objects.create_user('chef2@service.com', PWD, role=ROLE_CHEF, cin='20000020',
+                                             nom='C', prenom='C', telephone='+21650000020')
+        self.guest = User.objects.create_user('g2@booking.com', PWD, role=ROLE_CLIENT, cin='30000020',
+                                              nom='G', prenom='G', telephone='+21650000021')
+        Menu.objects.create(name='Couscous', category=Menu.PLAT)          # prix non saisi par le chef
+
+    def test_invalid_date_filter_is_ignored_instead_of_crashing(self):
+        self.client.force_login(self.chef)
+        for bad in ('abc', '2026-13-45', '2026-02-30'):
+            r = self.client.get(reverse('menu_list'), {'date': bad})
+            self.assertEqual(r.status_code, 200, bad)
+            self.assertContains(r, 'Couscous')
+
+    def test_client_menu_and_home_do_not_show_zero_price(self):
+        self.client.force_login(self.guest)
+        self.assertNotContains(self.client.get(reverse('client_menu')), '0.00 TND')
+        self.client.logout()
+        self.assertNotContains(self.client.get(reverse('home')), '0 TND</div>')
