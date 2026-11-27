@@ -64,7 +64,7 @@
 31,7,Story,"US22 · En tant qu'admin, je veux modérer les avis afin de garder un contenu approprié.","En tant qu'admin, je veux modérer les avis afin de garder un contenu approprié.",To Do,Low,2,Sprint 8 - Bracelet IA et avis,Admin release-3
 32,7,Story,"US23 · En tant que client, je veux consulter mon historique de réservations et mes factures afin de suivre mes séjours.","En tant que client, je veux consulter mon historique de réservations et mes factures afin de suivre mes séjours.
 
-État au 12/11/2026 : Listes « mes réservations » et « mes factures » déjà présentes.",To Do,Medium,3,Sprint 8 - Bracelet IA et avis,Client release-3
+État au 27/11/2026 : Mes réservations (historique, annulation) et Mes factures avec facture imprimable.",Done,Medium,3,Sprint 8 - Bracelet IA et avis,Client release-3
 33,6,Story,"US24 · En tant que client, je veux appliquer une promotion à ma réservation afin de profiter des réductions.","En tant que client, je veux appliquer une promotion à ma réservation afin de profiter des réductions.",To Do,Medium,3,"Sprint 7 - Prix, promotions, statistiques",Client release-3
 34,2,Story,"US25 · En tant que client, je veux annuler ma réservation afin de gérer un changement de programme.","En tant que client, je veux annuler ma réservation afin de gérer un changement de programme.",Done,Medium,3,"Sprint 3 - Clients, factures et ménage",Client release-2
 35,8,Story,"US26 · En tant qu'admin, je veux que le système prépare l'historique (réservations, saison, prix, jours fériés) afin d'alimenter la prédiction.","En tant qu'admin, je veux que le système prépare l'historique (réservations, saison, prix, jours fériés) afin d'alimenter la prédiction.",To Do,Medium,5,Sprint 9 - Prédiction d'occupation (ML),Admin release-3
